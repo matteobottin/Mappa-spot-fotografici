@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guida Fotografica — Tenerife &amp; Lanzarote 2026</title>
+<meta name="description" content="Guida fotografica professionale per Tenerife e Lanzarote. 20 spot. Dati astronomici precisi 9–20 giugno 2026.">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0C0E14;--card:#1E2232;--card2:#242840;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
+  --text:#EDE9E2;--text2:#9BA3BF;--text3:#5C6280;
+  --gold:#E8A84C;--gold2:#F5D070;--teal:#4EC9C0;
+  --tenerife:#4A9FE0;--lanzarote:#7BC67A;
+  --red:#E05A5A;--amber:#F0A844;--green:#5DB870;--excel:#27C4A0;
+  --r:10px;--rlg:16px;--sh:0 4px 24px rgba(0,0,0,.5);--shlg:0 8px 48px rgba(0,0,0,.7);
+  --sf:'Playfair Display',Georgia,serif;
+  --ss:'DM Sans',system-ui,sans-serif;
+  --sm:'DM Mono','Courier New',monospace;
+}
+[data-theme="light"]{
+  --bg:#F2EFE9;--card:#fff;--card2:#F5F2EC;
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.14);
+  --text:#1A1C26;--text2:#4A4E6A;--text3:#8A8FA8;
+  --gold:#B8761A;--gold2:#96600E;--teal:#1A8A82;
+  --tenerife:#1A5FA0;--lanzarote:#2A8030;
+  --sh:0 4px 24px rgba(0,0,0,.1);--shlg:0 8px 48px rgba(0,0,0,.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ss);background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+body::before{content:'';position:fixed;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 15% 20%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 72% 8%,rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 45% 35%,rgba(232,168,76,.25) 0%,transparent 100%),
+    radial-gradient(1px 1px at 88% 55%,rgba(255,255,255,.2) 0%,transparent 100%),
+    radial-gradient(1px 1px at 5% 70%,rgba(255,255,255,.25) 0%,transparent 100%);
+  pointer-events:none;z-index:0;opacity:1;transition:opacity .3s}
+[data-theme="light"] body::before{opacity:0}
+.app{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:0 20px 60px}
+
+/* HEADER */
+.hdr{display:flex;align-items:flex-end;justify-content:space-between;padding:28px 0 20px;border-bottom:.5px solid var(--border);margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.eyb{font-family:var(--sm);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+.ttl{font-family:var(--sf);font-size:clamp(22px,4vw,36px);font-weight:700;color:var(--text);line-height:1.15}
+.ttl span{color:var(--gold)}
+.sub{font-size:12px;color:var(--text2);margin-top:4px;font-weight:300}
+.hbtns{display:flex;gap:6px}
+.bic{width:34px;height:34px;border-radius:50%;border:.5px solid var(--border2);background:var(--card);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
+.bic:hover{background:var(--card2);color:var(--text)}
+
+/* DAY SELECTOR */
+.dsel{background:var(--card);border:.5px solid var(--border);border-radius:var(--rlg);padding:14px 18px;margin-bottom:14px}
+.dsh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.dst{font-family:var(--sm);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.dpills{display:flex;gap:4px;flex-wrap:wrap}
+.dp{font-family:var(--sm);font-size:9px;padding:5px 7px;border-radius:8px;border:.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .12s;text-align:center;line-height:1.3;min-width:34px}
+.dp:hover{background:var(--card2);color:var(--text)}
+.dp.sel{color:#0C0E14;font-weight:600}
+.dp.qe{border-color:var(--excel)}.dp.qg{border-color:var(--green)}.dp.qo{border-color:var(--amber)}
+.dp.sel.qe{background:var(--excel)}.dp.sel.qg{background:var(--green)}.dp.sel.qo{background:var(--amber)}
+.adsh{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px;margin-top:12px;padding-top:12px;border-top:.5px solid var(--border)}
+.ai{background:var(--card2);border:.5px solid var(--border);border-radius:var(--r);padding:8px 10px}
+.al2{font-family:var(--sm);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:2px}
+.av{font-family:var(--sm);font-size:12px;font-weight:500;color:var(--gold)}
+.as2{font-size:9px;color:var(--text2);margin-top:1px}
+.aq{display:inline-block;font-size:8px;font-weight:500;padding:1px 6px;border-radius:5px;margin-top:3px}
+.qe-b{background:rgba(39,196,160,.15);color:var(--excel)}.qg-b{background:rgba(93,184,112,.15);color:var(--green)}.qo-b{background:rgba(240,168,68,.15);color:var(--amber)}
+
+/* CALENDAR */
+.cal{background:var(--card);border:.5px solid var(--border);border-radius:var(--rlg);padding:12px 18px;margin-bottom:14px}
+.calt{font-family:var(--sm);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.calt::after{content:'';flex:1;height:.5px;background:var(--border)}
+.cgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+.cc{text-align:center;padding:5px 2px;border-radius:7px;cursor:pointer;border:.5px solid transparent;transition:all .12s}
+.cc:hover,.cc.sel{border-color:var(--gold);background:rgba(232,168,76,.06)}
+.cc-d{font-family:var(--sm);font-size:6px;color:var(--text3)}
+.cc-n{font-family:var(--sm);font-size:10px;font-weight:500;color:var(--text)}
+.cc-m{font-size:11px;line-height:1.3}
+.cc-b{height:3px;border-radius:2px;margin-top:3px}
+.be{background:var(--excel)}.bg{background:var(--green)}.bo{background:var(--amber)}
+.cc-ev{font-size:6px;color:var(--text3);margin-top:1px;line-height:1.2}
+.cleg{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+.cli{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text3)}
+.cld{width:8px;height:3px;border-radius:2px}
+
+/* 24H CHART */
+.chart-box{background:var(--card);border:.5px solid var(--border);border-radius:var(--rlg);padding:14px 18px 10px;margin-bottom:14px}
+.chart-title{font-family:var(--sm);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.chart-title::after{content:'';flex:1;height:.5px;background:var(--border)}
+#chartSvg{width:100%;display:block;overflow:visible}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:.5px solid var(--border)}
+.chli{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--text3)}
+.chli-line{width:18px;height:2px;border-radius:1px}
+.chli-dash{width:18px;height:0;border-top:2px dashed}
+
+/* FILTER BAR */
+.fbar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.flbl{font-family:var(--sm);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-right:2px}
+.fb{font-size:10px;font-family:var(--ss);padding:4px 10px;border-radius:18px;border:.5px solid var(--border2);background:var(--card);color:var(--text2);cursor:pointer;transition:all .12s}
+.fb:hover{background:var(--card2);color:var(--text)}
+.fb.on{font-weight:500;background:var(--card2)}
+.fb.oA{border-color:var(--tenerife);color:var(--tenerife);background:rgba(74,159,224,.08)}
+.fb.oB{border-color:var(--lanzarote);color:var(--lanzarote);background:rgba(123,198,122,.08)}
+.fb.oC{border-color:#9B8FE8;color:#9B8FE8;background:rgba(155,143,232,.08)}
+.fb.oD{border-color:var(--gold);color:var(--gold);background:rgba(232,168,76,.08)}
+.fb.oE{border-color:var(--teal);color:var(--teal);background:rgba(78,201,192,.08)}
+.fb.oF{border-color:#F08844;color:#F08844;background:rgba(240,136,68,.08)}
+.fb.oG{border-color:var(--lanzarote);color:var(--lanzarote);background:rgba(123,198,122,.08)}
+.fb.oW{border-color:#9B8FE8;color:#9B8FE8;background:rgba(155,143,232,.08)}
+.fb.oS{border-color:var(--teal);color:var(--teal);background:rgba(78,201,192,.08)}
+.fb.oT{border-color:var(--amber);color:var(--amber);background:rgba(240,168,68,.08)}
+
+/* MAP */
+.mwrap{position:relative;border-radius:var(--rlg);overflow:hidden;border:.5px solid var(--border2);margin-bottom:14px;box-shadow:var(--sh)}
+#map{width:100%;height:500px}
+.mctrl{position:absolute;top:10px;left:10px;z-index:800;display:flex;gap:4px;flex-direction:column}
+.mcb{font-size:10px;font-family:var(--sm);padding:5px 9px;border-radius:6px;border:.5px solid rgba(255,255,255,.2);background:rgba(12,14,20,.88);color:rgba(255,255,255,.85);cursor:pointer;backdrop-filter:blur(4px);transition:all .15s;white-space:nowrap}
+.mcb.act{background:rgba(232,168,76,.25);border-color:rgba(232,168,76,.6);color:var(--gold)}
+.mcb:hover{background:rgba(255,255,255,.08)}
+
+/* PANEL */
+.panel{position:absolute;top:10px;right:10px;width:292px;max-height:483px;background:var(--card);border:.5px solid var(--border2);border-radius:var(--rlg);box-shadow:var(--shlg);z-index:1000;display:none;overflow:hidden;flex-direction:column}
+.panel.open{display:flex;animation:fi .2s ease}
+.pimg{width:100%;height:118px;object-fit:cover;flex-shrink:0}
+.pph{width:100%;height:55px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3);flex-shrink:0}
+.pscr{overflow-y:auto;flex:1}
+.pscr::-webkit-scrollbar{width:2px}
+.pscr::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.pbdy{padding:9px 12px 12px}
+.pcl{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;line-height:22px;text-align:center;cursor:pointer;z-index:10}
+.pis{font-family:var(--sm);font-size:8px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px}
+.pis.T{color:var(--tenerife)}.pis.L{color:var(--lanzarote)}
+.pnm{font-family:var(--sf);font-size:16px;font-weight:700;color:var(--text);line-height:1.2;margin-bottom:1px}
+.pty{font-size:9px;color:var(--text2);margin-bottom:8px}
+.ps{margin-bottom:7px;padding-bottom:7px;border-bottom:.5px solid var(--border)}
+.ps:last-child{border:none;margin:0;padding:0}
+.psl{font-family:var(--sm);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.psv{font-size:10px;color:var(--text);line-height:1.5}
+.atb{width:100%;border-collapse:collapse}
+.atb td{padding:2px 0;font-size:9px;vertical-align:top}
+.atb td:first-child{color:var(--text3);width:90px;font-family:var(--sm);font-size:8px}
+.atb td:last-child{color:var(--text);font-family:var(--sm)}
+.tbox{border:.5px solid var(--border2);border-radius:7px;padding:5px 8px;margin-top:5px;font-size:9px;font-family:var(--sm);line-height:1.4}
+.mpils{display:flex;gap:2px;flex-wrap:wrap;margin-top:5px}
+.mp{font-size:8px;padding:2px 5px;border-radius:5px;font-family:var(--sm);cursor:pointer;border:.5px solid transparent;transition:transform .1s}
+.mp:hover{transform:scale(1.12)}
+.mpe{background:rgba(39,196,160,.15);color:var(--excel);border-color:rgba(39,196,160,.3)}
+.mpg{background:rgba(93,184,112,.15);color:var(--green);border-color:rgba(93,184,112,.3)}
+.mpo{background:rgba(240,168,68,.15);color:var(--amber);border-color:rgba(240,168,68,.3)}
+.frow{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
+.fchip{font-size:9px;padding:1px 6px;border-radius:7px;font-family:var(--sm);font-weight:500}
+.fcw{background:rgba(155,143,232,.15);color:#9B8FE8}
+.fcs{background:rgba(74,159,224,.15);color:var(--tenerife)}
+.fct{background:rgba(123,198,122,.15);color:var(--lanzarote)}
+.tags{display:flex;gap:2px;flex-wrap:wrap;margin-top:5px}
+.tag{font-size:8px;padding:1px 6px;border-radius:6px;font-weight:500}
+.t-sun{background:rgba(232,168,76,.15);color:var(--gold)}
+.t-mw{background:rgba(155,143,232,.15);color:#9B8FE8}
+.t-dr{background:rgba(123,198,122,.15);color:var(--lanzarote)}
+.t-go{background:rgba(240,136,68,.15);color:#F08844}
+.t-la{background:rgba(74,159,224,.15);color:var(--tenerife)}
+.t-al{background:rgba(78,201,192,.15);color:var(--teal)}
+.t-fw{background:rgba(155,143,232,.12);color:#B0A8F0;border:.5px solid rgba(155,143,232,.25)}
+.t-fs{background:rgba(78,201,192,.12);color:var(--teal);border:.5px solid rgba(78,201,192,.25)}
+.t-ft{background:rgba(240,168,68,.12);color:var(--amber);border:.5px solid rgba(240,168,68,.25)}
+.mbtn{display:block;width:100%;margin-top:8px;padding:6px;font-size:10px;font-family:var(--ss);border:.5px solid var(--gold);border-radius:var(--r);background:rgba(232,168,76,.06);color:var(--gold);cursor:pointer;text-align:center;transition:all .15s}
+.mbtn:hover{background:rgba(232,168,76,.14)}
+
+/* GRID */
+.slbl{font-family:var(--sm);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:8px;margin-bottom:8px;margin-top:4px}
+.slbl::after{content:'';flex:1;height:.5px;background:var(--border)}
+.idot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dT{background:var(--tenerife)}.dL{background:var(--lanzarote)}
+.sgr{display:grid;grid-template-columns:repeat(auto-fill,minmax(164px,1fr));gap:6px;margin-bottom:16px}
+.mc{background:var(--card);border:.5px solid var(--border);border-radius:var(--r);padding:9px 11px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;animation:fi .3s ease both}
+.mc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px}
+.mc.iT::before{background:var(--tenerife)}.mc.iL::before{background:var(--lanzarote)}
+.mc:hover{border-color:var(--border2);background:var(--card2);transform:translateY(-1px);box-shadow:var(--sh)}
+.mc.hidden{display:none}
+.mn{font-size:12px;font-weight:500;color:var(--text);margin-bottom:1px;line-height:1.3}
+.mt{font-size:8px;color:var(--text3);font-family:var(--sm);margin-bottom:3px}
+.mf{font-size:8px;color:var(--text3);font-family:var(--sm)}
+.mtn{font-size:8px;font-family:var(--sm);margin-top:3px;padding:2px 5px;border-radius:4px;display:inline-block}
+
+/* LEAFLET */
+.leaflet-control-zoom a{background:var(--card)!important;color:var(--text)!important;border-color:var(--border2)!important}
+.leaflet-bar{border:.5px solid var(--border2)!important;box-shadow:none!important}
+.cm{width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.85);box-shadow:0 2px 8px rgba(0,0,0,.5);cursor:pointer;transition:transform .12s}
+.cm:hover{transform:scale(1.45)}
+.cT{background:var(--tenerife)}.cL{background:var(--lanzarote)}.cM{background:#9B8FE8}
+
+/* MISC */
+.footer{text-align:center;padding:20px 0 6px;border-top:.5px solid var(--border);margin-top:16px}
+.footer p{font-size:9px;color:var(--text3);font-family:var(--sm)}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(max-width:600px){.panel{width:calc(100% - 20px)}.cgrid{grid-template-columns:repeat(6,1fr)}.adsh{grid-template-columns:repeat(2,1fr)}}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* Compass modal */
+.mo{position:fixed;inset:0;background:rgba(4,6,8,.85);z-index:3000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.mo.open{display:flex;animation:fi .2s ease}
+.comp-btn{display:block;width:100%;margin-top:6px;padding:7px;font-size:10px;font-family:var(--ss);border:.5px solid var(--teal);border-radius:var(--r);background:rgba(78,201,192,.06);color:var(--teal);cursor:pointer;text-align:center;transition:all .15s}
+.comp-btn:hover{background:rgba(78,201,192,.14)}
+.cring{position:relative;width:300px;height:300px;border-radius:50%;overflow:hidden;margin:0 auto;box-shadow:0 0 0 2px var(--border2),0 0 30px rgba(78,201,192,.1)}
+#cMapDiv{width:300px;height:300px;position:absolute;inset:0}
+#cSvg{position:absolute;inset:0;width:300px;height:300px;pointer-events:none}
+/* Chart wrapper */
+#chartWrap{width:100%;overflow:hidden}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hdr">
+  <div>
+    <div class="eyb">⬡ Guida fotografica professionale · Viaggio 9–20 giugno 2026</div>
+    <h1 class="ttl">Tenerife <span>&amp;</span> Lanzarote</h1>
+    <p class="sub">20 spot selezionati · Grandangolo · Standard · Tele · Golden hour · Tramonto · Via Lattea · Drone</p>
+  </div>
+  <div class="hbtns">
+    <button class="bic" id="thBtn" onclick="toggleTheme()">🌙</button>
+  </div>
+</header>
+
+<!-- DAY SELECTOR -->
+<div class="dsel">
+  <div class="dsh">
+    <span class="dst">Seleziona giorno — aggiorna tutti i dati in tempo reale</span>
+    <span id="selLbl" style="font-family:var(--sm);font-size:10px;color:var(--text2)"></span>
+  </div>
+  <div class="dpills" id="dpills"></div>
+  <div class="adsh" id="adsh"></div>
+</div>
+
+<!-- QUALITY CALENDAR -->
+<div class="cal">
+  <div class="calt">Qualità astronomica per ogni notte del viaggio</div>
+  <div class="cgrid" id="cgrid"></div>
+  <div class="cleg">
+    <div class="cli"><div class="cld be"></div> Eccellente (buio &gt;4h)</div>
+    <div class="cli"><div class="cld bg"></div> Ottimo (&gt;2h)</div>
+    <div class="cli"><div class="cld bo"></div> Accettabile (finestra limitata)</div>
+  </div>
+</div>
+
+<!-- 24H ASTRONOMICAL CHART -->
+<div class="chart-box">
+  <div class="chart-title">Grafico astronomico 24h — aggiornato al giorno selezionato</div>
+  <div id="chartWrap"></div>
+  <div class="chart-legend">
+    <div class="chli"><div class="chli-line" style="background:#F5D070"></div> Sole (giorno)</div>
+    <div class="chli"><div class="chli-line" style="background:#E8A84C"></div> Ora d'oro</div>
+    <div class="chli"><div class="chli-line" style="background:#6080C0"></div> Blue hour</div>
+    <div class="chli"><div class="chli-dash" style="border-color:rgba(180,200,240,0.7)"></div> Luna</div>
+    <div class="chli"><div class="chli-line" style="background:#27C4A0"></div> Via Lattea (eccellente)</div>
+    <div class="chli"><div class="chli-line" style="background:#F0A844"></div> Via Lattea (accettabile)</div>
+    <div class="chli"><div class="chli-line" style="background:#E05A5A"></div> Via Lattea (scarsa)</div>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="fbar">
+  <span class="flbl">Isola</span>
+  <button class="fb on" onclick="setF('all',this)">Tutti</button>
+  <button class="fb" data-fk="T"      onclick="setF('T',this)">🔵 Tenerife</button>
+  <button class="fb" data-fk="L"      onclick="setF('L',this)">🟢 Lanzarote</button>
+  <span class="flbl" style="margin-left:6px">Luce</span>
+  <button class="fb" data-fk="milky"  onclick="setF('milky',this)">★ Via Lattea</button>
+  <button class="fb" data-fk="sunset" onclick="setF('sunset',this)">🌅 Tramonto</button>
+  <button class="fb" data-fk="alba"   onclick="setF('alba',this)">🌄 Alba</button>
+  <button class="fb" data-fk="golden" onclick="setF('golden',this)">✦ Golden</button>
+  <button class="fb" data-fk="drone"  onclick="setF('drone',this)">◈ Drone</button>
+  <span class="flbl" style="margin-left:6px">Ottica</span>
+  <button class="fb" data-fk="wide"   onclick="setF('wide',this)">⬡ Grandangolo</button>
+  <button class="fb" data-fk="std"    onclick="setF('std',this)">◎ Standard</button>
+  <button class="fb" data-fk="tele"   onclick="setF('tele',this)">◉ Tele</button>
+</div>
+
+<!-- MAP -->
+<div class="mwrap">
+  <div id="map"></div>
+  <div class="mctrl">
+    <button class="mcb act" id="bT" onclick="swL('terrain')">▲ Altimetrica</button>
+    <button class="mcb"     id="bS" onclick="swL('satellite')">🛰 Satellite</button>
+  </div>
+  <div class="panel" id="panel">
+    <button class="pcl" onclick="clP()">×</button>
+    <img id="pIm" class="pimg" src="" alt="" style="display:none" onerror="this.style.display='none';document.getElementById('pPh').style.display='flex'">
+    <div id="pPh" class="pph">nessuna foto disponibile</div>
+    <div class="pscr"><div class="pbdy">
+      <div class="pis" id="pIs"></div>
+      <div class="pnm" id="pNm"></div>
+      <div class="pty" id="pTy"></div>
+      <div class="ps">
+        <div class="psl">Astronomia — <span id="pDL" style="color:var(--gold)"></span></div>
+        <table class="atb">
+          <tr><td>Alba</td>           <td id="pSunR"></td></tr>
+          <tr><td>Ora d'oro alba</td>  <td id="pGolA"></td></tr>
+          <tr><td>Tramonto</td>        <td id="pSunS"></td></tr>
+          <tr><td>Ora d'oro tram.</td> <td id="pGolE"></td></tr>
+          <tr><td>Buio astron.</td>    <td id="pTwi"></td></tr>
+          <tr><td>Alba V.L. ★</td>     <td id="pMWR"></td></tr>
+          <tr><td>Tramonto V.L. ★</td> <td id="pMWS"></td></tr>
+          <tr><td>Luna</td>            <td id="pMn"></td></tr>
+          <tr><td>Finestra buio</td>   <td id="pWin"></td></tr>
+        </table>
+        <div class="tbox" id="pTb"></div>
+        <div class="mpils" id="pMp"></div>
+      </div>
+      <div class="ps"><div class="psl">Via Lattea</div><div class="psv" id="pMWt"></div></div>
+      <div class="ps"><div class="psl">Luce ideale</div><div class="psv" id="pLi"></div></div>
+      <div class="ps"><div class="psl">Focali (equiv. 35mm)</div><div class="frow" id="pFc"></div></div>
+      <div class="ps"><div class="psl">Impostazioni camera</div><div class="psv" id="pSt" style="font-family:var(--sm);font-size:9px;white-space:pre-line;color:var(--text2)"></div></div>
+      <div class="ps"><div class="psl">Composizioni chiave</div><div class="psv" id="pCo"></div></div>
+      <div class="ps"><div class="psl">Note pratiche</div><div class="psv" id="pNo" style="color:var(--text2)"></div></div>
+      <div class="tags" id="pTg"></div>
+      <div style="font-family:var(--sm);font-size:8px;color:var(--text3);margin-top:6px" id="pGp"></div>
+      <button class="comp-btn" onclick="openCompass()">&#x1F9ED;&nbsp; Vista cielo circolare</button>
+    </div></div>
+  </div>
+</div>
+
+<!-- SPOT GRIDS -->
+<div class="slbl"><span class="idot dT"></span>Tenerife — 10 spot</div>
+<div class="sgr" id="gT"></div>
+<div class="slbl"><span class="idot dL"></span>Lanzarote — 10 spot</div>
+<div class="sgr" id="gL"></div>
+
+<footer class="footer">
+  <p>Guida fotografica professionale · Tenerife &amp; Lanzarote · Viaggio 9–20 giugno 2026</p>
+  <p style="margin-top:3px">Fasi lunari: TheSkyLive.com (LQ 8 giu · NM 15 giu · FQ 21 giu · FM 30 giu) · Centro galattico: Sgr A* RA 17h45m Dec −29° · Mappa: © OpenStreetMap © Esri</p>
+</footer>
+
+<!-- SKY COMPASS MODAL -->
+<div class="mo" id="compassModal">
+  <div style="background:var(--card);border:.5px solid var(--border2);border-radius:var(--rlg);padding:20px 22px 18px;width:360px;max-width:96vw;box-shadow:0 8px 48px rgba(0,0,0,.8)">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+      <div>
+        <div id="cmName" style="font-family:var(--sf);font-size:15px;font-weight:700;color:var(--text)"></div>
+        <div id="cmCoord" style="font-family:var(--sm);font-size:8px;color:var(--text3);margin-top:2px"></div>
+      </div>
+      <button onclick="closeCompass()" style="background:var(--card2);border:.5px solid var(--border2);color:var(--text2);border-radius:50%;width:24px;height:24px;font-size:14px;line-height:24px;text-align:center;cursor:pointer">&#215;</button>
+    </div>
+    <div class="cring">
+      <div id="cMapDiv"></div>
+      <svg id="cSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:12px">
+      <div style="background:var(--card2);border:.5px solid var(--border);border-radius:var(--r);padding:6px 8px">
+        <div style="font-family:var(--sm);font-size:7px;text-transform:uppercase;color:#F5D070;margin-bottom:2px">&#9728; Sole</div>
+        <div id="cSunAz" style="font-family:var(--sm);font-size:11px;font-weight:500;color:#F5D070">--</div>
+        <div id="cSunAlt" style="font-family:var(--sm);font-size:9px;color:var(--text2)">--</div>
+      </div>
+      <div style="background:var(--card2);border:.5px solid var(--border);border-radius:var(--r);padding:6px 8px">
+        <div style="font-family:var(--sm);font-size:7px;text-transform:uppercase;color:rgba(180,200,240,.9);margin-bottom:2px">&#9790; Luna</div>
+        <div id="cMoonAz" style="font-family:var(--sm);font-size:11px;font-weight:500;color:rgba(180,200,240,.9)">--</div>
+        <div id="cMoonAlt" style="font-family:var(--sm);font-size:9px;color:var(--text2)">--</div>
+      </div>
+      <div style="background:var(--card2);border:.5px solid var(--border);border-radius:var(--r);padding:6px 8px">
+        <div style="font-family:var(--sm);font-size:7px;text-transform:uppercase;color:#27C4A0;margin-bottom:2px">&#9733; Via Lattea</div>
+        <div id="cGcAz" style="font-family:var(--sm);font-size:11px;font-weight:500;color:#27C4A0">--</div>
+        <div id="cGcAlt" style="font-family:var(--sm);font-size:9px;color:var(--text2)">--</div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-family:var(--sm);font-size:9px;color:var(--text3)">00:00</span>
+        <span id="cSliderTime" style="font-family:var(--sm);font-size:13px;font-weight:500;color:var(--gold)">23:00</span>
+        <span style="font-family:var(--sm);font-size:9px;color:var(--text3)">24:00</span>
+      </div>
+      <input type="range" id="cSlider" min="0" max="1440" value="1380"
+             oninput="onCSlider(this.value)"
+             style="width:100%;height:4px;border-radius:2px;accent-color:#E8A84C;cursor:pointer;background:var(--card2);display:block">
+    </div>
+  </div>
+</div>
+</div>
+<script>
+
+/* ========================================================
+   DATA — 9-20 giugno 2026, 28.4°N 16.5°W, UTC+1
+   Fasi lunari verificate (TheSkyLive): LQ 8 giu, NM 15 giu, FQ 21 giu
+   Centro galattico (Sgr A*): transita ~23:50, visibile 23:15-04:41
+======================================================== */
+const DY=[
+  {d:9, dw:"Mar",mn:"🌗",il:40,mr:"01:10",ms:"14:00",q:"ok",   ri:"06:51",se:"21:20",gm:"06:51–07:38",ge:"20:33–21:20",ci:"21:49",na:"22:28",as:"23:14",dw2:"23:14–01:10 (~2h)",    nt:"Luna sorge 01:10 — 2h di buio prima della levata."},
+  {d:10,dw:"Mer",mn:"🌗",il:29,mr:"02:00",ms:"14:55",q:"ok",   ri:"06:51",se:"21:21",gm:"06:51–07:38",ge:"20:34–21:21",ci:"21:50",na:"22:29",as:"23:15",dw2:"23:15–02:00 (~2h45m)",  nt:"Luna sorge 02:00 — buona finestra di quasi 3h."},
+  {d:11,dw:"Gio",mn:"🌗",il:20,mr:"02:55",ms:"15:45",q:"good", ri:"06:50",se:"21:21",gm:"06:50–07:37",ge:"20:34–21:21",ci:"21:50",na:"22:29",as:"23:15",dw2:"23:15–02:55 (~3h40m)",  nt:"Luna sorge 02:55 — quasi 4h di buio."},
+  {d:12,dw:"Ven",mn:"🌘",il:13,mr:"03:45",ms:"16:30",q:"excel",ri:"06:50",se:"21:22",gm:"06:50–07:37",ge:"20:35–21:22",ci:"21:51",na:"22:30",as:"23:16",dw2:"23:16–03:45 (~4h30m)",  nt:"🌟 Eccellente: 4h30m di buio totale, luna al 13%."},
+  {d:13,dw:"Sab",mn:"🌘",il:6, mr:"04:30",ms:"17:15",q:"excel",ri:"06:49",se:"21:22",gm:"06:49–07:36",ge:"20:35–21:22",ci:"21:51",na:"22:30",as:"23:16",dw2:"23:16–04:30 (~5h15m)",  nt:"🌟 Eccellente: 5h15m di buio, luna al 6%."},
+  {d:14,dw:"Dom",mn:"🌘",il:2, mr:"05:15",ms:"18:00",q:"excel",ri:"06:49",se:"21:22",gm:"06:49–07:36",ge:"20:35–21:22",ci:"21:51",na:"22:30",as:"23:16",dw2:"23:16–05:15 (~6h)",      nt:"🌟 Eccellente: 6h di buio puro, luna quasi invisibile al 2%."},
+  {d:15,dw:"Lun",mn:"🌑",il:1, mr:"05:55",ms:"20:35",q:"excel",ri:"06:49",se:"21:22",gm:"06:49–07:36",ge:"20:35–21:22",ci:"21:51",na:"22:31",as:"23:17",dw2:"23:17–05:49 (~6h30m)",  nt:"🌟 LUNA NUOVA — notte di buio assoluto. La migliore del viaggio.",ev:"🌑 Luna Nuova"},
+  {d:16,dw:"Mar",mn:"🌒",il:2, mr:"06:50",ms:"21:20",q:"excel",ri:"06:49",se:"21:23",gm:"06:49–07:36",ge:"20:36–21:23",ci:"21:52",na:"22:31",as:"23:17",dw2:"Tutta la notte",         nt:"🌟 Eccellente: luna tramonta 21:20, prima del crepuscolo."},
+  {d:17,dw:"Mer",mn:"🌒",il:5, mr:"07:45",ms:"22:10",q:"excel",ri:"06:49",se:"21:23",gm:"06:49–07:36",ge:"20:36–21:23",ci:"21:52",na:"22:31",as:"23:17",dw2:"23:17 in poi",           nt:"🌟 Eccellente: luna tramonta prima del buio astronomico."},
+  {d:18,dw:"Gio",mn:"🌒",il:10,mr:"08:40",ms:"23:00",q:"excel",ri:"06:49",se:"21:23",gm:"06:49–07:36",ge:"20:36–21:23",ci:"21:52",na:"22:31",as:"23:17",dw2:"23:17 in poi",           nt:"🌟 Eccellente: luna tramonta appena prima del buio."},
+  {d:19,dw:"Ven",mn:"🌒",il:17,mr:"09:35",ms:"23:55",q:"good", ri:"06:49",se:"21:23",gm:"06:49–07:36",ge:"20:36–21:23",ci:"21:52",na:"22:32",as:"23:18",dw2:"23:55 poi buio pieno",   nt:"Ottima: luna bassa 17%, tramonta 23:55."},
+  {d:20,dw:"Sab",mn:"🌓",il:26,mr:"10:30",ms:"00:40",q:"good", ri:"06:49",se:"21:23",gm:"06:49–07:36",ge:"20:36–21:23",ci:"21:52",na:"22:32",as:"23:18",dw2:"23:18–00:40 poi buio",   nt:"Ottima: solstizio. Luna 26%, tramonta 00:40.",ev:"☀️ Solstizio"},
+];
+
+/* Galactic center (Sgr A*) constants for 28.4°N, June */
+const GC={rise:19.0, transit:23.83, set:28.68, maxAlt:33}; // set = 04:41 next day = 28.68h
+
+const SP=[
+  {id:0, is:"T",nm:"Roques de García",    ty:"Teide NP · 2.100m",         lt:28.2252,ln:-16.6315,tg:["milky","golden","landscape"],fo:["14–20mm","24–35mm"],fc:["fcw","fcs"],li:"Tramonto · Notte (Via Lattea) · Alba",se:"Astro: f/2.8 · ISO 3200–6400 · 20–25\"\nGiorno: f/8–11 · ISO 100 · 1/60–1/200s\nFiltri: GND 0.9 soft",co:"Roque del Teide con formazioni in primo piano · Arco Via Lattea sopra il Teide · Golden hour con tonalità rosse",no:"Parcheggio Mirador Ruleta H24. Freddo notturno — abbigliamento termico e head torch rossa.",mw:"Nucleo sorge SE ~23:20 (alt. 35°). Spot iconico per Via Lattea.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Roques_de_Garcia.jpg/1200px-Roques_de_Garcia.jpg"},
+  {id:1, is:"T",nm:"Playa del Benijo",    ty:"Costa Anaga · spiaggia lavica",lt:28.5759,ln:-16.1852,tg:["sunset","landscape","drone"],fo:["14–24mm","70–105mm"],fc:["fcw","fct"],li:"Tramonto · Golden hour sera",se:"Seta: f/11 · ISO 100 · ND10 · 30\"–4'\nOnde: f/5.6 · ISO 400 · 1/500s",co:"Stack rocks come leading lines · Riflessi acqua bassa · Scogliere Anaga sfondo",no:"⚠️ CHIUSA luglio 2024 per frana — verificare. Drone: unico accesso spiaggia.",mw:"Non primario per astro (luce da Almáciga). Spot tramonto.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Playa_del_Benijo%2C_Tenerife.jpg/1200px-Playa_del_Benijo%2C_Tenerife.jpg"},
+  {id:2, is:"T",nm:"Mirador de Masca",    ty:"Valle Teno · 900m",           lt:28.306, ln:-16.8404,tg:["golden","drone","landscape"],fo:["24–35mm","70–135mm"],fc:["fcs","fct"],li:"Golden hour (2h prima tramonto) · Nebbia mattutina",se:"f/8 · ISO 100 · 1/100–1/400s\nPolarizzatore per verde saturo",co:"Villaggio nel fondovalle tra pareti · Strada tornanti dall'alto · Controluce tramonto con creste illuminate",no:"TF-436 strettissima. Sab/Dom bus obbligatorio 10–17h. Arrivare all'alba.",mw:"Luce dal porto. Spot tramonto/golden hour.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Masca_Valley_-_Tenerife.jpg/1200px-Masca_Valley_-_Tenerife.jpg"},
+  {id:3, is:"T",nm:"Punta de Teno",       ty:"Promontorio ovest · faro storico",lt:28.342,ln:-16.9229,tg:["sunset","landscape","alba"],fo:["16–28mm","35–50mm"],fc:["fcw","fcs"],li:"Tramonto Atlantico aperto · Blue hour · Alba",se:"f/11 · ISO 100 · lunga esp. onde\nPolarizzatore + GND 0.9\nBlue hour: f/8 · ISO 400 · 30s",co:"Faro con rocce e oceano · Vista nord Los Gigantes · Sentiero costiero con onde",no:"Auto private vietate Sab/Dom 10–17h. Accesso libero altri giorni. TF-445.",mw:"Minima luce artificiale a ovest. Discreto per astro.",ph:""},
+  {id:4, is:"T",nm:"Los Gigantes",         ty:"Scogliere vulcaniche · 600m",  lt:28.2583,ln:-16.8368,tg:["drone","landscape","golden"],fo:["14–20mm","200–400mm"],fc:["fcw","fct"],li:"Mattino dal mare · Drone 07–09 · Tramonto rosa",se:"f/8 · ISO 100 · 1/250–1/500s\n400mm equiv. per comprimere le pareti",co:"Vista frontale dal mare (barca/kayak) · Drone dall'alto pattern · Tramonto riflessi rosa",no:"Porto: barca o kayak per angolazione frontale. Drone vietato sopra porto.",mw:"Spot diurno/tramonto. Non adatto per astro.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Los_Gigantes_cliffs%2C_Tenerife_2.jpg/1200px-Los_Gigantes_cliffs%2C_Tenerife_2.jpg"},
+  {id:5, is:"T",nm:"Foresta di Anaga",    ty:"Laurisilva · Parco Rurale",    lt:28.5309,ln:-16.2799,tg:["landscape","golden","alba"],fo:["14–24mm","35–85mm"],fc:["fcw","fcs"],li:"Nebbia mattutina · Raggi di luce filtrata (raggio di Dio)",se:"f/5.6–8 · ISO 400–1600 · 1/30–1/200s\nWB manuale 4500K",co:"Tronchi contorti con luce filtrata · Vista oceano dalle creste · Sentiero in prospettiva",no:"TF-12 (Cruz del Carmen). Permesso El Pijaral: prenotare online. Portare giacca.",mw:"Spot diurno. Foresta densa — non adatto per astro.",ph:""},
+  {id:6, is:"T",nm:"Charco del Viento",   ty:"Costa nord · piscina lavica",  lt:28.4007,ln:-16.674, tg:["sunset","landscape"],fo:["14–24mm","35mm"],fc:["fcw","fcs"],li:"Tramonto · Blue hour",se:"Seta: f/11 · ND10 · 30\"–4'\nMosso: f/8 · 1/4s\nBlue hour: f/11 · ISO 200 · 60s",co:"Onde nella piscina lavica in lunga esposizione · Tramonto Atlantico · Rocce come frame",no:"Verificare apertura stagionale. Strada banana plantation.",mw:"Costa nord. Tramonto più efficace.",ph:""},
+  {id:7, is:"T",nm:"Llano de Ucanca",     ty:"Pianura vulcanica · 2.000m",   lt:28.2113,ln:-16.6351,tg:["milky","sunset","landscape"],fo:["14–20mm"],fc:["fcw"],li:"Notte (Via Lattea 180°) · Tramonto sopra le nuvole",se:"Astro singolo: f/2.0–2.8 · ISO 3200–6400 · 20–25\"\nStar tracker: ISO 800 · f/2.8 · 5'\nTimelapse: ISO 1600 · 20\" · intervallo 25s",co:"Arco galattico est–ovest con Teide · 360° panorama stitch · Timelapse stelle rotanti",no:"Parcheggio ampio H24. 300+ notti limpide/anno. −5/−15°C di notte. Abbigliamento termico.",mw:"Nucleo culmina Sud ~02:00 (alt. 40°). MIGLIOR SPOT ASTRO di Tenerife.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Llano_de_Ucanca%2C_Tenerife.jpg/1200px-Llano_de_Ucanca%2C_Tenerife.jpg"},
+  {id:8, is:"T",nm:"Pico Viejo",          ty:"Vulcano 3.134m · caldera",     lt:28.2622,ln:-16.6728,tg:["milky","landscape","alba"],fo:["14–20mm","35mm"],fc:["fcw","fcs"],li:"Notte sopra le nuvole · Alba con mare di nuvole",se:"Astro: f/2.8 · ISO 6400 · 20–25\"\nAlba: f/11 · ISO 100 · 1/60–1/500s",co:"Bordo caldera con Via Lattea · Mare di nuvole all'alba · Teide visto dall'interno",no:"PERMESSO OBBLIGATORIO: reservasparquesnacionales.es · Sentiero 23+26 · 14km A/R.",mw:"Buio assoluto. Notti 12–18 giu: fenomenali.",ph:""},
+  {id:9, is:"T",nm:"Osservatorio Izaña",  ty:"Starlight Destination · 2.400m",lt:28.2987,ln:-16.5106,tg:["milky","landscape"],fo:["14mm","20mm"],fc:["fcw","fcw"],li:"Notte — 300+ notti limpide/anno",se:"Singolo: f/1.8–2.8 · ISO 6400–12800 · 15–25\"\nStar tracker: ISO 800 · f/2.8 · 5'",co:"Telescopi come primo piano con Via Lattea · Andromeda visibile a occhio nudo · Meteore",no:"Parcheggio TF-24. Legge del Cielo 1988 — buio legale garantito. Trasparenza >90%.",mw:"Classe A mondiale. Il migliore spot astro delle Canarie.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Teide_observatory_in_december.jpg/1200px-Teide_observatory_in_december.jpg"},
+  {id:10,is:"L",nm:"Timanfaya NP",        ty:"Montagne del Fuoco · vulcani",  lt:29.0157,ln:-13.7829,tg:["sunset","landscape","golden"],fo:["14–24mm","70–200mm"],fc:["fcw","fct"],li:"Alba · Tramonto dall'esterno · Evitare 10–16h",se:"f/8–11 · ISO 100 · 1/100–1/400s\nPolarizzatore per rossi vulcanici",co:"Panoramica LZ-67 con crateri · Tele per serie vulcani · Drone dall'esterno",no:"Dentro il parco: solo bus tour. Tremesana Walk: prenotare Cabildo. Drone vietato dentro.",mw:"Tramonto/golden hour spot primario.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Timanfaya_National_Park%2C_Lanzarote.jpg/1200px-Timanfaya_National_Park%2C_Lanzarote.jpg"},
+  {id:11,is:"L",nm:"El Golfo — Laguna Verde",ty:"Cratere sommerso · costa ovest",lt:28.9792,ln:-13.8296,tg:["sunset","landscape","golden"],fo:["16–28mm","35–50mm"],fc:["fcw","fcs"],li:"Tramonto (costa ovest) · Golden hour tardo pomeriggio",se:"f/11 · ISO 100 · 1/100s\nPolarizzatore + GND 0.9\nBlue hour: f/8 · ISO 400 · 30–60s",co:"Laguna verde + sabbia nera + scogliera rossa · Vista dal bordo cratere · Riflessi tramonto",no:"Accesso libero H24. Non scendere nella laguna (riserva). 1–2h prima del tramonto.",mw:"Tramonto spettacolare — luce dorata sulla laguna.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Laguna_Verde_-_Lanzarote.jpg/1200px-Laguna_Verde_-_Lanzarote.jpg"},
+  {id:12,is:"L",nm:"Volcán del Cuervo",   ty:"Caldera · Los Volcanes NP",     lt:28.9962,ln:-13.6848,tg:["sunset","milky","landscape"],fo:["14–24mm","35mm"],fc:["fcw","fcs"],li:"Tramonto · Notte (buio eccellente) · Mattino laterale",se:"Astro: f/2.8 · ISO 4000 · 25\"\nGiorno: f/8 · ISO 100 · 1/60–1/200s",co:"Bordo cratere rosso con lava nera · Via Lattea sopra la caldera · Vista panoramica dall'alto",no:"Trail 4km facile. Navetta da Nuestra Señora de los Dolores. Nessun inquinamento luminoso.",mw:"Buio eccellente. Notti 12–18 giu: ideali per astro.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Volcan_del_cuervo%2C_Lanzarote.jpg/1200px-Volcan_del_cuervo%2C_Lanzarote.jpg"},
+  {id:13,is:"L",nm:"La Geria — Vigneti",  ty:"Valle vulcanica · UNESCO",      lt:28.9693,ln:-13.7149,tg:["golden","landscape","drone"],fo:["35–50mm","85–135mm"],fc:["fcs","fct"],li:"Blue hour · Golden hour sera · Tramonto",se:"f/8 · ISO 100 · 1/60–1/200s\nDrone overhead 90°: f/8 · ISO 100",co:"Cerchi di lava dall'alto drone · Vite solitaria al centro · Pattern + vulcani sfondo",no:"Drone: nessuna restrizione nell'area. Bodegas Rubicón: miglior punto di vista.",mw:"Ottimo per astro con vigneti come primo piano notturno.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/La_Geria%2C_Lanzarote_-_panoramio.jpg/1200px-La_Geria%2C_Lanzarote_-_panoramio.jpg"},
+  {id:14,is:"L",nm:"Los Hervideros",      ty:"Scogliere laviche · costa ovest",lt:28.9543,ln:-13.8328,tg:["sunset","landscape","drone"],fo:["14–24mm","35mm"],fc:["fcw","fcs"],li:"Tramonto (costa ovest) · Blue hour · Onde forti",se:"Onde: f/11 · ISO 100 · 0.5–4s\nSeta: ND10 · 30–120s",co:"Onde nelle grotte vulcaniche · Spray con controluce · Vista dall'alto scogliere",no:"Accesso libero H24. Parcheggio gratuito. Vento forte — proteggere camera.",mw:"Tramonto perfetto sulla costa ovest.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Los_Hervideros_Lanzarote.jpg/1200px-Los_Hervideros_Lanzarote.jpg"},
+  {id:15,is:"L",nm:"Playa Papagayo",      ty:"Baia · Monumento Natural",      lt:28.8426,ln:-13.7881,tg:["alba","drone","landscape"],fo:["16–28mm","35–70mm"],fc:["fcw","fcs"],li:"Alba (baia est) · Drone mattino presto · Tramonto",se:"f/11 · ISO 100 · Polarizzatore\nAlba: 1/250s · ISO 200",co:"Baia dall'alto drone · Alba con riflessi dorati · Stitch panoramico spiagge multiple",no:"Strada sterrata 6km (4WD). €3 entrata. Drone OK mattino. Folla dalle 10h.",mw:"Spot primario per alba. Non ottimale per astro.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Playa_Papagayo_Lanzarote.jpg/1200px-Playa_Papagayo_Lanzarote.jpg"},
+  {id:16,is:"L",nm:"Famara Beach",        ty:"Spiaggia nord · scogliere 600m",lt:29.1156,ln:-13.5568,tg:["sunset","golden","drone"],fo:["14–24mm","35–85mm"],fc:["fcw","fcs"],li:"Tramonto · Golden hour · Blue hour sera",se:"f/8–11 · ISO 100 · 1/60–1/500s\nPolarizzatore + GND per scogliere",co:"6km con Risco de Famara · Controluce onde · Surfisti con scogliere sfondo",no:"Vento forte quasi sempre — proteggere camera. Drone OK dall'area spiaggia.",mw:"Costa nord-ovest. Notti 12–18 giu: discreto per astro.",ph:""},
+  {id:17,is:"L",nm:"Mirador del Río",     ty:"Belvedere · Cesar Manrique",    lt:29.2145,ln:-13.4812,tg:["landscape","golden","alba"],fo:["24–50mm","70–135mm"],fc:["fcs","fct"],li:"Mattino (luce est) · Golden hour · Vista La Graciosa",se:"f/8–11 · ISO 100 · 1/100–1/400s\nTele per isolare La Graciosa",co:"Vista La Graciosa e arcipelago Chinijo · Architettura Manrique · Compressione isole",no:"Aperto 10–16:30. €8.50. Arrivare prima per vista esterna senza folla.",mw:"Vista nord. Alba calda. Ottimo da fuori prima dell'apertura.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Mirador_del_Rio_Lanzarote.jpg/1200px-Mirador_del_Rio_Lanzarote.jpg"},
+  {id:18,is:"L",nm:"Caletón Blanco",      ty:"Spiaggia nord · bianco/nero",   lt:29.1934,ln:-13.4572,tg:["landscape","golden","drone"],fo:["16–28mm","50–85mm"],fc:["fcw","fcs"],li:"Mattino (luce laterale) · Blue hour · Tramonto",se:"f/11 · ISO 100 · Polarizzatore\nDrone overhead 90°: f/8",co:"Sabbia bianca vs roccia lavica nera · Piscine turchesi · Pattern geometrico drone",no:"Accesso libero H24. Quasi nessun turista. Abbinare con Mirador del Río.",mw:"Costa nord. Notti 12–18 giu: buono per astro.",ph:""},
+  {id:19,is:"L",nm:"Salinas de Janubio",  ty:"Saline · Playa del Janubio",    lt:28.9348,ln:-13.8298,tg:["sunset","drone","landscape","milky"],fo:["35–85mm","14–24mm"],fc:["fcs","fcw"],li:"Tramonto · Blue hour · Mattino (riflessi piatti)",se:"Riflessi: f/11 · ISO 100 · 1/60s\nDrone overhead 90°: f/8\nLD mattutina: ND6 · 60–120s",co:"Vasche colorate + vulcani sfondo · Pattern geometrico drone · Riflessi tramonto",no:"Accesso libero LZ-703. Drone: nessuna restrizione. Vista dal bordo strada.",mw:"Buio eccellente a ovest. Vasche come primo piano per Via Lattea.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Salinas_de_Janubio.jpg/1200px-Salinas_de_Janubio.jpg"},
+];
+
+/* focal category helper */
+function focalCats(foArr){
+  const s=new Set();
+  foArr.forEach(f=>{
+    const mm=parseInt(f.match(/(\d+)/)?.[1]||0);
+    if(mm<=35)s.add('wide');
+    if(mm>35&&mm<=85)s.add('std');
+    if(mm>85)s.add('tele');
+  });
+  return [...s];
+}
+/* Add focal cats to SP */
+SP.forEach(s=>{s.fc2=focalCats(s.fo);});
+
+const TL={milky:"Via Lattea",sunset:"Tramonto",alba:"Alba",golden:"Golden hour",drone:"Drone",landscape:"Paesaggio",wide:"Grandangolo",std:"Standard",tele:"Tele"};
+const TC={milky:"t-mw",sunset:"t-sun",alba:"t-al",golden:"t-go",drone:"t-dr",landscape:"t-la",wide:"t-fw",std:"t-fs",tele:"t-ft"};
+const QL={excel:"Eccellente",good:"Ottimo",ok:"Accettabile"};
+const QCC={excel:"qe",good:"qg",ok:"qo"};
+const QCB={excel:"qe-b",good:"qg-b",ok:"qo-b"};
+const QMP={excel:"mpe",good:"mpg",ok:"mpo"};
+
+var curD=9, curF="all", curSp=null, map=null, tl=null, mks=[];
+
+/* ── THEME ── */
+function toggleTheme(){
+  const h=document.documentElement;
+  const dk=h.getAttribute("data-theme")==="dark";
+  h.setAttribute("data-theme",dk?"light":"dark");
+  document.getElementById("thBtn").textContent=dk?"☀️":"🌙";
+}
+
+/* ── MAP LAYERS (no dark) ── */
+const LYR={
+  terrain:{u:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",a:"© Esri, OpenStreetMap contributors"},
+  satellite:{u:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",a:"© Esri, Maxar, Earthstar Geographics"},
+};
+function swL(k){
+  if(tl)map.removeLayer(tl);
+  tl=L.tileLayer(LYR[k].u,{attribution:LYR[k].a,maxZoom:18}).addTo(map);
+  ["bT","bS"].forEach(id=>document.getElementById(id).classList.remove("act"));
+  document.getElementById(k==="terrain"?"bT":"bS").classList.add("act");
+}
+function initMap(){
+  map=L.map("map",{center:[28.85,-15.0],zoom:7,zoomControl:true});
+  swL("terrain"); // default to terrain
+  SP.forEach(s=>{
+    const mw=s.tg.includes("milky");
+    const ic=L.divIcon({
+      className:"",
+      html:`<div class="cm ${mw?"cM":s.is==="T"?"cT":"cL"}" title="${s.nm}"></div>`,
+      iconSize:[14,14],iconAnchor:[7,7]
+    });
+    const m=L.marker([s.lt,s.ln],{icon:ic}).addTo(map);
+    m.on("click",()=>openP(s.id));
+    mks.push({m,s});
+  });
+}
+
+/* ── TIME HELPERS ── */
+function hm(s){
+  if(!s||s==="—")return null;
+  const c=s.replace(/[+].*/,"");
+  const p=c.split(":");
+  if(p.length<2)return null;
+  return parseInt(p[0])+parseInt(p[1])/60;
+}
+
+/* ── 24H CHART ── */
+
+function _hm(s){
+  if(!s)return null;
+  var c=s.replace(/[+].*/,'');
+  var p=c.split(':');
+  return(p.length<2||isNaN(+p[1]))?null:(+p[0])+(+p[1])/60;
+}
+
+function drawChart(){
+  var day=gd(curD);
+  /* Layout */
+  var W=760,PL=42,PR=12,PT=24,CH=118,AXIS_H=22,BAR_GAP=12,BAR_H=18;
+  var CW=W-PL-PR;
+  /* Times */
+  var sR=_hm(day.ri)||6.83, sS=_hm(day.se)||21.37;
+  var ciS=_hm(day.ci)||21.83, asS=_hm(day.as)||23.25;
+  var dCiv=sR-(ciS-sS), dAst=sR-(asS-sS), GD=0.78;
+  var mR=_hm(day.mr), mS=_hm(day.ms);
+  if(mR!==null&&mS!==null&&mS<mR)mS+=24;
+  /* Helpers */
+  function tx(h){return PL+(h/24)*CW;}
+  function ty(a,mx){return PT+CH-Math.max(0,Math.min(a,mx||90))/(mx||90)*CH;}
+  var P=[];
+  /* Background zones */
+  [[0,Math.max(0,dAst),'#0D1520'],[Math.max(0,dAst),Math.max(0,dCiv),'#152236'],
+   [Math.max(0,dCiv),Math.max(0,sR-GD),'#1E3568'],[Math.max(0,sR-GD),Math.min(24,sR+GD),'#2A1800'],
+   [Math.max(0,sR+GD),Math.min(24,sS-GD),'#0F1A2C'],[Math.max(0,sS-GD),Math.min(24,sS+0.55),'#2A1800'],
+   [Math.max(0,sS+0.55),Math.min(24,ciS),'#1E3568'],[Math.min(24,ciS),Math.min(24,asS),'#152236'],
+   [Math.min(24,asS),24,'#0D1520']
+  ].forEach(function(z){
+    if(z[1]>z[0])P.push('<rect x="'+tx(z[0]).toFixed(1)+'" y="'+PT+'" width="'+(tx(z[1])-tx(z[0])).toFixed(1)+'" height="'+CH+'" fill="'+z[2]+'"/>');
+  });
+  /* Grid lines + Y labels */
+  [30,60,90].forEach(function(a){
+    P.push('<line x1="'+PL+'" y1="'+ty(a).toFixed(1)+'" x2="'+(PL+CW)+'" y2="'+ty(a).toFixed(1)+'" stroke="rgba(255,255,255,0.09)" stroke-width="0.5"/>');
+    P.push('<text x="'+(PL-5)+'" y="'+(ty(a)+3)+'" font-size="7" fill="rgba(255,255,255,0.32)" text-anchor="end" font-family="DM Mono,monospace">'+a+'</text>');
+  });
+  P.push('<line x1="'+PL+'" y1="'+ty(0).toFixed(1)+'" x2="'+(PL+CW)+'" y2="'+ty(0).toFixed(1)+'" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>');
+  P.push('<text x="'+(PL-5)+'" y="'+(ty(0)+3)+'" font-size="7" fill="rgba(255,255,255,0.32)" text-anchor="end" font-family="DM Mono,monospace">0</text>');
+  /* Sun altitude - colored segments */
+  function sunAlt(t){return(t<sR||t>sS)?null:85*Math.sin(Math.PI*(t-sR)/(sS-sR));}
+  function sunCol(t){
+    if(t>=sR-GD&&t<=sR+GD)return '#E8A84C';
+    if(t>=sS-GD&&t<=sS+0.1)return '#E8A84C';
+    if((t>=dCiv&&t<sR-GD)||(t>sS+0.1&&t<=ciS))return '#6878C8';
+    return '#F0C840';
+  }
+  var segs=[],cur=null,t,a,col;
+  for(t=sR;t<=sS+0.02;t+=0.04){
+    a=sunAlt(t); if(a===null||a<0){if(cur){segs.push(cur);cur=null;}continue;}
+    col=sunCol(t); if(!cur||cur.c!==col){if(cur)segs.push(cur);cur={c:col,p:[]};}
+    cur.p.push(tx(t).toFixed(1)+','+ty(a).toFixed(1));
+  }
+  if(cur)segs.push(cur);
+  segs.forEach(function(sg){
+    if(sg.p.length<2)return;
+    var b=ty(0).toFixed(1),fx=sg.p[0].split(',')[0],lx=sg.p[sg.p.length-1].split(',')[0];
+    if(sg.c==='#E8A84C')P.push('<polygon points="'+sg.p.join(' ')+' '+lx+','+b+' '+fx+','+b+'" fill="rgba(232,168,76,0.1)"/>');
+    P.push('<polyline points="'+sg.p.join(' ')+'" fill="none" stroke="'+sg.c+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>');
+  });
+  /* Moon */
+  if(mR!==null&&mS!==null){
+    var mp=[];
+    for(t=0;t<=24;t+=0.08){
+      var tt=(t<mR&&mR>8)?t+24:t;
+      if(tt<mR||tt>mS)continue;
+      a=55*Math.sin(Math.PI*(tt-mR)/(mS-mR));
+      if(a>=0)mp.push(tx(t).toFixed(1)+','+ty(a).toFixed(1));
+    }
+    if(mp.length>1)P.push('<polyline points="'+mp.join(' ')+'" fill="none" stroke="rgba(180,200,240,'+Math.min(0.85,0.28+day.il/70).toFixed(2)+')" stroke-width="1.8" stroke-dasharray="7,3" stroke-linecap="round"/>');
+  }
+  /* Galactic center - proper hour-angle bell curve */
+  function gcAlt(t){
+    var dec=-29*Math.PI/180, lat=28.4*Math.PI/180, H=(t-23.83)*15*Math.PI/180;
+    var s=Math.sin(lat)*Math.sin(dec)+Math.cos(lat)*Math.cos(dec)*Math.cos(H);
+    return Math.asin(Math.max(-1,Math.min(1,s)))*180/Math.PI;
+  }
+  var mwC=day.il<10?'#27C4A0':day.il<25?'#5DB870':day.il<50?'#F0A844':'#E05A5A';
+  var mwS=[],mwCur=null;
+  for(t=0;t<=24;t+=0.05){
+    a=gcAlt(t);
+    if(a<0){if(mwCur){mwS.push(mwCur);mwCur=null;}continue;}
+    var night=(t>=asS||t<=dAst), c2=night?mwC:'rgba(255,255,255,0.28)';
+    if(!mwCur||mwCur.c!==c2){if(mwCur)mwS.push(mwCur);mwCur={c:c2,night:night,p:[]};}
+    mwCur.p.push(tx(t).toFixed(1)+','+ty(a,40).toFixed(1));
+  }
+  if(mwCur)mwS.push(mwCur);
+  mwS.forEach(function(ms){
+    if(ms.p.length<2)return;
+    P.push('<polyline points="'+ms.p.join(' ')+'" fill="none" stroke="'+ms.c+'" stroke-width="'+(ms.night?'2.8':'1.2')+'" stroke-linecap="round" opacity="'+(ms.night?'0.9':'0.35')+'"/>');
+    if(ms.night&&ms.p.length>3){
+      var b=ty(0,40).toFixed(1),fx=ms.p[0].split(',')[0],lx=ms.p[ms.p.length-1].split(',')[0];
+      P.push('<polygon points="'+ms.p.join(' ')+' '+lx+','+b+' '+fx+','+b+'" fill="'+ms.c+'" opacity="0.07"/>');
+    }
+  });
+  /* Vertical event lines */
+  function evL(th,col,lbl,above,dash,lw){
+    if(th<0||th>24)return;
+    var x=tx(th).toFixed(1);
+    P.push('<line x1="'+x+'" y1="'+PT+'" x2="'+x+'" y2="'+(PT+CH)+'" stroke="'+col+'" stroke-width="'+(lw||0.75)+'" stroke-dasharray="'+(dash||'3,3')+'" opacity="0.7"/>');
+    if(lbl)P.push('<text x="'+x+'" y="'+(above?PT-4:PT+13)+'" font-size="7" fill="'+col+'" text-anchor="middle" font-family="DM Mono,monospace" opacity="0.9">'+lbl+'</text>');
+  }
+  evL(dAst,  '#9B8FE8', '\u2605',      true,  '4,3', 0.8);
+  evL(dCiv,  '#6878C8', 'civil',       false, '4,3', 0.7);
+  evL(sR-GD, '#E8A84C', 'golden',      false, '3,2', 0.9);
+  evL(sR,    '#F5D070', '\u2191\u2600',true,  '1,0', 1.5);
+  evL(sR+GD, '#E8A84C', 'golden',      true,  '3,2', 0.9);
+  evL(sS-GD, '#E8A84C', 'golden',      false, '3,2', 0.9);
+  evL(sS,    '#E8A84C', '\u2193\u2600',true,  '1,0', 1.5);
+  evL(sS+0.55,'#6878C8','civil',       true,  '4,3', 0.7);
+  evL(asS,   '#9B8FE8', '\u2605',      false, '4,3', 0.8);
+  /* X axis - label every 2h */
+  var aY=PT+CH;
+  for(var h=0;h<=24;h++){
+    var xh=tx(h), major=(h%2===0);
+    P.push('<line x1="'+xh.toFixed(1)+'" y1="'+aY+'" x2="'+xh.toFixed(1)+'" y2="'+(aY+(major?5:2))+'" stroke="rgba(255,255,255,'+(major?0.28:0.09)+')" stroke-width="'+(major?0.8:0.4)+'"/>');
+    if(major)P.push('<text x="'+xh.toFixed(1)+'" y="'+(aY+15)+'" font-size="8" fill="rgba(255,255,255,0.45)" text-anchor="middle" font-family="DM Mono,monospace">'+(h<10?'0':'')+h+':00</text>');
+  }
+  /* Light color bar - 144 segments */
+  function lerp3(r1,g1,b1,r2,g2,b2,t){
+    return 'rgb('+Math.round(r1+(r2-r1)*t)+','+Math.round(g1+(g2-g1)*t)+','+Math.round(b1+(b2-b1)*t)+')';
+  }
+  function lCol(t){
+    if(t<=dAst||t>=asS) return 'rgb(5,6,10)';
+    if(t<=dCiv)  { var p=(t-dAst)/(dCiv-dAst); return lerp3(5,6,10,12,22,55,p); }
+    if(t>=ciS)   { var p=1-(t-ciS)/(asS-ciS);  return lerp3(5,6,10,12,22,55,p); }
+    if(t<=sR-GD) { var p=(t-dCiv)/(sR-GD-dCiv); return lerp3(12,22,55,60,80,185,p); }
+    if(t>=sS+0.55&&t<=ciS){ var p=1-(t-sS-0.55)/(ciS-sS-0.55); return lerp3(12,22,55,60,80,185,p); }
+    if(t<=sR){
+      var p=(t-(sR-GD))/GD;
+      return p<0.35?lerp3(60,80,185,190,55,10,p/0.35):p<0.7?lerp3(190,55,10,255,130,20,(p-0.35)/0.35):lerp3(255,130,20,255,200,80,(p-0.7)/0.3);
+    }
+    if(t>=sS-GD){
+      var p=(t-(sS-GD))/GD;
+      return p<0.3?lerp3(255,250,220,255,200,80,p/0.3):p<0.65?lerp3(255,200,80,255,130,20,(p-0.3)/0.35):lerp3(255,130,20,60,80,185,(p-0.65)/0.35);
+    }
+    if(t<=sR+GD){ var p=(t-sR)/GD; return lerp3(255,200,80,255,252,230,p); }
+    var alt=85*Math.sin(Math.PI*(t-sR)/(sS-sR));
+    return alt<15?'rgb(255,240,180)':alt<40?'rgb(255,252,235)':'rgb(255,255,255)';
+  }
+  var barY=PT+CH+AXIS_H+BAR_GAP, sw=CW/144;
+  for(var bi=0;bi<144;bi++){
+    P.push('<rect x="'+(PL+bi*sw).toFixed(2)+'" y="'+barY+'" width="'+(sw+0.5).toFixed(2)+'" height="'+BAR_H+'" fill="'+lCol((bi/144)*24)+'"/>');
+  }
+  P.push('<rect x="'+PL+'" y="'+barY+'" width="'+CW+'" height="'+BAR_H+'" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" rx="1"/>');
+  P.push('<text x="'+(PL+2)+'" y="'+(barY+BAR_H+11)+'" font-size="7.5" fill="rgba(255,255,255,0.28)" font-family="DM Mono,monospace">colore della luce sul campo</text>');
+  /* Inject SVG */
+  var svgH=barY+BAR_H+16;
+  document.getElementById('chartWrap').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+svgH+'" style="width:100%;display:block;overflow:visible">'+P.join('')+'</svg>';
+}
+
+/* ── DAY SELECTOR ── */
+function gd(d){return DY.find(x=>x.d===d);}
+
+function selDay(d){
+  curD=d;
+  document.querySelectorAll(".dp").forEach(p=>p.classList.toggle("sel",+p.dataset.d===d));
+  document.querySelectorAll(".cc").forEach(c=>c.classList.toggle("sel",+c.dataset.d===d));
+  updDash();
+  drawChart(gd(d));
+  if(curSp!==null)updPA(curSp);
+  updTon();
+  document.getElementById("selLbl").textContent=`${d} giugno 2026`;
+}
+
+function updDash(){
+  const d=gd(curD); if(!d)return;
+  const qLabel={excel:"Eccellente",good:"Ottimo",ok:"Accettabile"};
+  const qCls={excel:"qe-b",good:"qg-b",ok:"qo-b"};
+  document.getElementById("adsh").innerHTML=`
+    <div class="ai"><div class="al2">☀ Alba</div><div class="av">${d.ri}</div><div class="as2">Civil: ${d.ci}</div></div>
+    <div class="ai"><div class="al2">✦ Ora d'oro alba</div><div class="av" style="font-size:10px">${d.gm}</div></div>
+    <div class="ai"><div class="al2">☀ Tramonto</div><div class="av">${d.se}</div></div>
+    <div class="ai"><div class="al2">✦ Ora d'oro tramonto</div><div class="av" style="font-size:10px">${d.ge}</div></div>
+    <div class="ai"><div class="al2">◑ Buio astronomico</div><div class="av">${d.as}</div><div class="as2">Blue hour: ${d.ci}–${d.as}</div></div>
+    <div class="ai"><div class="al2">★ Alba centro galattico</div><div class="av">~23:20</div><div class="as2">Visibile fino alle ~04:41</div></div>
+    <div class="ai"><div class="al2">${d.mn} Luna ${d.il}%</div><div class="av" style="font-size:10px">↑${d.mr} · ↓${d.ms}</div></div>
+    <div class="ai"><div class="al2">★ Finestra buio</div><div class="av" style="font-size:9px">${d.dw2}</div><div class="aq ${qCls[d.q]}">${qLabel[d.q]}</div></div>
+    ${d.ev?`<div class="ai" style="border-color:var(--gold)"><div class="al2">Evento</div><div class="av" style="font-size:10px">${d.ev}</div></div>`:""}
+  `;
+}
+
+function bldPills(){
+  const c=document.getElementById("dpills");
+  DY.forEach(d=>{
+    const el=document.createElement("button");
+    el.className=`dp ${QCC[d.q]}`;
+    el.dataset.d=d.d;
+    el.innerHTML=`${d.d}<br>${d.mn}`;
+    el.title=`${d.d} giu · Luna ${d.il}% · ${QL[d.q]}`;
+    el.onclick=()=>selDay(d.d);
+    c.appendChild(el);
+  });
+}
+
+function bldCal(){
+  const g=document.getElementById("cgrid");
+  DY.forEach(d=>{
+    const bc={excel:"be",good:"bg",ok:"bo"}[d.q];
+    const el=document.createElement("div");
+    el.className=`cc${d.d===curD?" sel":""}`;
+    el.dataset.d=d.d;
+    el.innerHTML=`<div class="cc-d">${d.dw.slice(0,2)}</div><div class="cc-n">${d.d}</div><div class="cc-m">${d.mn}</div><div class="cc-b ${bc}"></div>${d.ev?`<div class="cc-ev">${d.ev.replace(/^\S+ /,"")}</div>`:""}`;
+    el.onclick=()=>selDay(d.d);
+    g.appendChild(el);
+  });
+}
+
+/* ── PANEL ── */
+function openP(id){
+  const s=SP[id]; curSp=id;
+  const iEl=document.getElementById("pIs");
+  iEl.textContent=s.is==="T"?"▲ TENERIFE":"▲ LANZAROTE";
+  iEl.className="pis "+s.is;
+  document.getElementById("pNm").textContent=s.nm;
+  document.getElementById("pTy").textContent=s.ty;
+  const img=document.getElementById("pIm"),ph=document.getElementById("pPh");
+  if(s.ph){img.src=s.ph;img.style.display="block";ph.style.display="none";}
+  else{img.style.display="none";ph.style.display="flex";}
+  document.getElementById("pLi").textContent=s.li;
+  document.getElementById("pFc").innerHTML=s.fo.map((f,i)=>`<span class="fchip ${s.fc[i]}">${f}mm</span>`).join("");
+  document.getElementById("pSt").textContent=s.se;
+  document.getElementById("pCo").textContent=s.co;
+  document.getElementById("pNo").textContent=s.no;
+  document.getElementById("pMWt").textContent=s.mw;
+  const allTags=[...s.tg,...(s.fc2||[])];
+  document.getElementById("pTg").innerHTML=allTags.map(t=>`<span class="tag ${TC[t]}">${TL[t]}</span>`).join("");
+  document.getElementById("pGp").textContent=`GPS: ${s.lt.toFixed(4)}°N  ${Math.abs(s.ln).toFixed(4)}°W`;
+  updPA(id);
+  document.getElementById("panel").classList.add("open");
+  map.panTo([s.lt,s.ln]);
+}
+
+function updPA(id){
+  const d=gd(curD); if(!d)return;
+  const qCol={excel:"var(--excel)",good:"var(--green)",ok:"var(--amber)"};
+  const qBg={excel:"rgba(39,196,160,.1)",good:"rgba(93,184,112,.08)",ok:"rgba(240,168,68,.08)"};
+  document.getElementById("pDL").textContent=`${d.d} giugno 2026`;
+  document.getElementById("pSunR").textContent=`↑ ${d.ri}`;
+  document.getElementById("pGolA").textContent=d.gm;
+  document.getElementById("pSunS").textContent=`↓ ${d.se}`;
+  document.getElementById("pGolE").textContent=d.ge;
+  document.getElementById("pTwi").textContent=`da ${d.as}`;
+  document.getElementById("pMWR").textContent="~23:20 (nucleo galattico visibile)";
+  document.getElementById("pMWS").textContent="~04:41 (alba astronomica)";
+  document.getElementById("pMn").textContent=`${d.mn} ${d.il}% · ↑${d.mr} · ↓${d.ms}`;
+  document.getElementById("pWin").textContent=d.dw2;
+  const tb=document.getElementById("pTb");
+  tb.style.background=qBg[d.q]; tb.style.color=qCol[d.q];
+  tb.textContent=d.nt;
+  document.getElementById("pMp").innerHTML=DY.map(day=>
+    `<span class="mp ${QMP[day.q]}" onclick="selDay(${day.d})" title="${day.d} giu · Luna ${day.il}%">${day.d}${day.mn}</span>`
+  ).join("");
+}
+
+function clP(){document.getElementById("panel").classList.remove("open");curSp=null;}
+
+/* ── GRID ── */
+function updTon(){
+  const d=gd(curD);
+  const qBg={excel:"rgba(39,196,160,.12)",good:"rgba(93,184,112,.1)",ok:"rgba(240,168,68,.1)"};
+  const qCol={excel:"var(--excel)",good:"var(--green)",ok:"var(--amber)"};
+  document.querySelectorAll(".mtn").forEach(el=>{
+    if(d){el.style.background=qBg[d.q];el.style.color=qCol[d.q];
+      el.textContent=`${d.d} giu · ${QL[d.q]}`;}
+  });
+}
+
+function bldGrid(){
+  const gT=document.getElementById("gT"),gL=document.getElementById("gL");
+  SP.forEach((s,i)=>{
+    const allTags=[...s.tg,...(s.fc2||[])];
+    const el=document.createElement("div");
+    el.className=`mc i${s.is}`;
+    el.dataset.island=s.is;
+    el.dataset.tags=allTags.join(",");
+    el.style.animationDelay=`${i*.03}s`;
+    el.innerHTML=`
+      <div class="mn">${s.nm}</div>
+      <div class="mt">${s.ty}</div>
+      <div class="mf">${s.fo.join(" · ")}mm equiv.</div>
+      <div class="mtn"></div>
+      <div class="tags">${allTags.map(t=>`<span class="tag ${TC[t]}">${TL[t]}</span>`).join("")}</div>`;
+    el.onclick=()=>openP(s.id);
+    (s.is==="T"?gT:gL).appendChild(el);
+  });
+  updTon();
+}
+
+/* ── FILTER ── */
+function setF(f,btn){
+  curF=f;
+  document.querySelectorAll(".fb").forEach(b=>
+    b.classList.remove("on","oA","oB","oC","oD","oE","oF","oG","oW","oS","oT")
+  );
+  btn.classList.add("on");
+  const cm={T:"oA",L:"oB",milky:"oC",sunset:"oD",alba:"oE",golden:"oF",drone:"oG",wide:"oW",std:"oS",tele:"oT"};
+  if(cm[f])btn.classList.add(cm[f]);
+  mks.forEach(({m,s})=>{
+    const tags=[...s.tg,...(s.fc2||[])];
+    const show=f==="all"||s.is===f||tags.includes(f);
+    if(show)m.addTo(map);else map.removeLayer(m);
+  });
+  document.querySelectorAll(".mc").forEach(el=>{
+    const show=f==="all"||el.dataset.island===f||el.dataset.tags.split(",").includes(f);
+    el.classList.toggle("hidden",!show);
+  });
+  if(curSp!==null){
+    const s=SP[curSp];
+    const tags=[...s.tg,...(s.fc2||[])];
+    if(!(f==="all"||s.is===f||tags.includes(f)))clP();
+  }
+}
+
+/* ── INIT ── */
+
+/* ═══ SKY COMPASS ══════════════════════════════════════════════════ */
+var _cMap=null;
+var _mDec={9:-5,10:-10,11:-14,12:-18,13:-20,14:-15,15:22,16:20,17:17,18:12,19:7,20:0};
+function _celPos(decDeg,lat,haHr){
+  var d=decDeg*Math.PI/180,l=lat*Math.PI/180,H=haHr*15*Math.PI/180;
+  var sa=Math.max(-1,Math.min(1,Math.sin(l)*Math.sin(d)+Math.cos(l)*Math.cos(d)*Math.cos(H)));
+  var alt=Math.asin(sa)*180/Math.PI;
+  if(alt<-0.3)return{az:0,alt:alt,vis:false};
+  var ca=Math.max(-1,Math.min(1,(Math.sin(d)-Math.sin(l)*sa)/(Math.cos(l)*Math.cos(Math.asin(sa)))));
+  var az=Math.acos(ca)*180/Math.PI;
+  if(Math.sin(H)>0)az=360-az;
+  return{az:az,alt:alt,vis:true};
+}
+function openCompass(){
+  if(curSp===null)return;
+  var s=SP[curSp];
+  document.getElementById('cmName').textContent=s.nm;
+  document.getElementById('cmCoord').textContent=s.lt.toFixed(4)+'N  '+Math.abs(s.ln).toFixed(4)+'W';
+  document.getElementById('compassModal').classList.add('open');
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      if(!_cMap){
+        _cMap=L.map('cMapDiv',{center:[s.lt,s.ln],zoom:13,zoomControl:false,attributionControl:false});
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:18}).addTo(_cMap);
+        L.circleMarker([s.lt,s.ln],{radius:5,color:'#E8A84C',fillColor:'#E8A84C',fillOpacity:1,weight:2}).addTo(_cMap);
+      }else{_cMap.setView([s.lt,s.ln],13);_cMap.invalidateSize();}
+    });
+  });
+  var d=gd(curD),dh=_hm(d.as)||23.25;
+  document.getElementById('cSlider').value=Math.round(dh*60);
+  _updC(dh);
+}
+function closeCompass(){document.getElementById('compassModal').classList.remove('open');}
+function onCSlider(v){_updC(v/60);}
+function _updC(t){
+  if(curSp===null)return;
+  var s=SP[curSp],d=gd(curD),lat=s.lt;
+  var sun=_celPos(23.4,lat,t-13.75);
+  var gc=_celPos(-29,lat,t-23.83);
+  var mr=_hm(d.mr)||0,ms2=_hm(d.ms)||12;
+  if(ms2<mr)ms2+=24;
+  var moon=_celPos(_mDec[d.d]||0,lat,t-(mr+ms2)/2);
+  _drawCSvg(sun,moon,gc);
+  function fz(p){return p.vis?'Az '+Math.round(p.az)+'deg':'sotto orizzonte';}
+  function fa(p){return p.vis?'Alt '+Math.round(p.alt)+'deg':'';}
+  document.getElementById('cSunAz').textContent=fz(sun);document.getElementById('cSunAlt').textContent=fa(sun);
+  document.getElementById('cMoonAz').textContent=fz(moon);document.getElementById('cMoonAlt').textContent=fa(moon);
+  document.getElementById('cGcAz').textContent=fz(gc);document.getElementById('cGcAlt').textContent=fa(gc);
+  var h=Math.floor(t),m=Math.round((t-h)*60);if(m>=60){h++;m=0;}
+  document.getElementById('cSliderTime').textContent=(h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+}
+function _drawCSvg(sun,moon,gc){
+  var CX=150,CY=150,R=134,PI=Math.PI,P=[];
+  for(var a=0;a<360;a+=15){
+    var ar=a*PI/180,tl=a%90===0?13:a%45===0?8:4;
+    P.push('<line x1="'+(CX+R*Math.sin(ar)).toFixed(1)+'" y1="'+(CY-R*Math.cos(ar)).toFixed(1)+'" x2="'+(CX+(R-tl)*Math.sin(ar)).toFixed(1)+'" y2="'+(CY-(R-tl)*Math.cos(ar)).toFixed(1)+'" stroke="rgba(255,255,255,'+(a%90===0?0.55:a%45===0?0.3:0.18)+')" stroke-width="'+(a%90===0?1.5:0.75)+'"/>');
+  }
+  [30,60].forEach(function(alt){
+    var r2=(R*Math.cos(alt*PI/180)).toFixed(1);
+    P.push('<circle cx="'+CX+'" cy="'+CY+'" r="'+r2+'" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.6" stroke-dasharray="5,4"/>');
+    P.push('<text x="'+(CX+3)+'" y="'+(CY-r2-2)+'" font-size="7.5" font-family="DM Mono,monospace" fill="rgba(255,255,255,0.28)">'+alt+'</text>');
+  });
+  P.push('<circle cx="'+CX+'" cy="'+CY+'" r="'+R+'" fill="rgba(0,0,0,0.08)" stroke="rgba(255,255,255,0.3)" stroke-width="1.3"/>');
+  [['N',0,'#FF6060',15,700],['E',90,'rgba(255,255,255,0.8)',13,600],['S',180,'rgba(255,255,255,0.8)',13,600],['W',270,'rgba(255,255,255,0.8)',13,600]].forEach(function(d2){
+    var ar=d2[1]*PI/180,rr=R-19;
+    P.push('<text x="'+(CX+rr*Math.sin(ar)).toFixed(1)+'" y="'+(CY-rr*Math.cos(ar)+5).toFixed(1)+'" text-anchor="middle" font-size="'+d2[3]+'" font-weight="'+d2[4]+'" font-family="DM Mono,monospace" fill="'+d2[2]+'">'+d2[0]+'</text>');
+  });
+  ['NE','SE','SW','NW'].forEach(function(lb,i){
+    var ar=(45+i*90)*PI/180,rr=R-19;
+    P.push('<text x="'+(CX+rr*Math.sin(ar)).toFixed(1)+'" y="'+(CY-rr*Math.cos(ar)+3).toFixed(1)+'" text-anchor="middle" font-size="8.5" font-family="DM Mono,monospace" fill="rgba(255,255,255,0.3)">'+lb+'</text>');
+  });
+  P.push('<line x1="'+(CX-6)+'" y1="'+CY+'" x2="'+(CX+6)+'" y2="'+CY+'" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>');
+  P.push('<line x1="'+CX+'" y1="'+(CY-6)+'" x2="'+CX+'" y2="'+(CY+6)+'" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>');
+  function obj(pos,col,sz,lb){
+    if(!pos.vis)return;
+    var r2=R*Math.cos(pos.alt*PI/180),ar=pos.az*PI/180,ox=CX+r2*Math.sin(ar),oy=CY-r2*Math.cos(ar);
+    P.push('<line x1="'+CX+'" y1="'+CY+'" x2="'+ox.toFixed(1)+'" y2="'+oy.toFixed(1)+'" stroke="'+col+'" stroke-width="0.7" opacity="0.2"/>');
+    P.push('<circle cx="'+ox.toFixed(1)+'" cy="'+oy.toFixed(1)+'" r="'+(sz*2)+'" fill="'+col+'" opacity="0.1"/>');
+    P.push('<circle cx="'+ox.toFixed(1)+'" cy="'+oy.toFixed(1)+'" r="'+sz+'" fill="'+col+'" opacity="0.97"/>');
+    var side=ox>CX?1:-1,lx=(ox+side*(sz+7)).toFixed(1),anchor=side>0?'start':'end';
+    P.push('<text x="'+lx+'" y="'+(oy+3).toFixed(1)+'" font-size="9.5" font-family="DM Mono,monospace" fill="'+col+'" text-anchor="'+anchor+'" opacity="0.96">'+lb+'</text>');
+    P.push('<text x="'+lx+'" y="'+(oy+13).toFixed(1)+'" font-size="8" font-family="DM Mono,monospace" fill="'+col+'" text-anchor="'+anchor+'" opacity="0.62">'+Math.round(pos.az)+'/ '+Math.round(pos.alt)+'</text>');
+  }
+  obj(gc,'#27C4A0',5,'Via Lattea');
+  obj(moon,'rgba(180,200,240,0.95)',7,'Luna');
+  obj(sun,'#F5D070',9,'Sole');
+  document.getElementById('cSvg').innerHTML=P.join('');
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  bldPills();
+  bldCal();
+  updDash();
+  drawChart();
+  bldGrid();
+  selDay(curD);
+  initMap();
+});
+
+</script>
+</body>
+</html>
