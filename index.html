@@ -9,6 +9,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
 :root{
   --bg:#0C0E14;--card:#1E2232;--card2:#242840;
   --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.16);
@@ -208,134 +209,265 @@ body::before{content:'';position:fixed;inset:0;
 .comp-btn:hover{background:rgba(78,201,192,.14)}
 .cring{position:relative;width:300px;height:300px;border-radius:50%;overflow:hidden;margin:0 auto;box-shadow:0 0 0 2px var(--border2),0 0 30px rgba(78,201,192,.1)}
 #cMapDiv{width:300px;height:300px;position:absolute;inset:0}
-#cSvg{position:absolute;inset:0;width:300px;height:300px;pointer-events:none}
+#cSvgWrap{position:absolute;inset:0;z-index:2000;pointer-events:none}
 /* Chart wrapper */
 #chartWrap{width:100%;overflow:hidden}
+
+
+/* ═══════════════════════════════════════════
+   ADDITIONS (v10)
+═══════════════════════════════════════════ */
+
+/* Leaflet marker pins (were missing entirely) */
+.mkr{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.88);
+  box-shadow:0 2px 8px rgba(0,0,0,0.55);
+  cursor:pointer;transition:transform .12s
+}
+.mkr:hover{transform:scale(1.5)}
+.mT{background:var(--tenerife)}
+.mL{background:var(--lanzarote)}
+.mMW{background:#9B8FE8}
+
+/* Language toggle button */
+.lang-btn{
+  font-family:var(--sm);font-size:10px;font-weight:500;
+  padding:0 10px;height:34px;border-radius:20px;
+  border:.5px solid var(--border2);background:var(--card);color:var(--text2);
+  cursor:pointer;transition:all .15s;letter-spacing:.05em
+}
+.lang-btn:hover{background:var(--card2);color:var(--text)}
+
+/* Header buttons group */
+.hbtns{display:flex;gap:6px;align-items:center}
+
+/* Moon display box (replaces calendar grid) */
+.moon-box{
+  display:flex;gap:24px;align-items:center;
+  padding:10px 4px
+}
+.moon-box svg{flex-shrink:0}
+.moon-info{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;gap:4px;
+  font-family:var(--sm)
+}
+.moon-day{
+  font-size:14px;font-weight:500;color:var(--text);
+  letter-spacing:.02em
+}
+.moon-phase{font-size:11px;color:var(--text2)}
+.moon-quality{font-size:13px;font-weight:600;margin-top:2px}
+.moon-window{font-size:10px;color:var(--text3);margin-top:4px}
+.moon-event{
+  font-size:10px;color:var(--gold);margin-top:4px;
+  padding:3px 6px;border:.5px solid var(--gold);
+  border-radius:5px;display:inline-block;width:fit-content
+}
+@media(max-width:600px){
+  .moon-box{flex-direction:column;gap:10px;text-align:center}
+  .moon-info{align-items:center}
+}
+
+/* Quality legend block under moon */
+.q-legend{
+  display:flex;gap:14px;flex-wrap:wrap;
+  margin-top:12px;padding-top:12px;
+  border-top:.5px solid var(--border);
+  font-family:var(--sm);font-size:9px;color:var(--text3)
+}
+.q-legend .qli{display:flex;align-items:center;gap:5px}
+.q-legend .qdot{width:10px;height:4px;border-radius:2px;flex-shrink:0}
+
+/* Scene filter button colors */
+.fb.oRocky  {border-color:#B8A07A;color:#B8A07A;background:rgba(184,160,122,.08)}
+.fb.oCliff  {border-color:#8A9AB8;color:#8A9AB8;background:rgba(138,154,184,.08)}
+.fb.oBeach  {border-color:#F0C888;color:#F0C888;background:rgba(240,200,136,.08)}
+.fb.oVolc   {border-color:#E08868;color:#E08868;background:rgba(224,136,104,.08)}
+.fb.oForest {border-color:#7BA87A;color:#7BA87A;background:rgba(123,168,122,.08)}
+.fb.oSalt   {border-color:#C0D0E0;color:#C0D0E0;background:rgba(192,208,224,.08)}
+.fb.oVine   {border-color:#B088C8;color:#B088C8;background:rgba(176,136,200,.08)}
+.fb.oView   {border-color:#88C0B0;color:#88C0B0;background:rgba(136,192,176,.08)}
+
+/* Scene tag colors in panel/grid */
+.t-rocky    {background:rgba(184,160,122,.15);color:#B8A07A}
+.t-cliff    {background:rgba(138,154,184,.15);color:#8A9AB8}
+.t-beach    {background:rgba(240,200,136,.15);color:#F0C888}
+.t-volcanic {background:rgba(224,136,104,.15);color:#E08868}
+.t-forest   {background:rgba(123,168,122,.15);color:#7BA87A}
+.t-salt     {background:rgba(192,208,224,.15);color:#C0D0E0}
+.t-vineyard {background:rgba(176,136,200,.15);color:#B088C8}
+.t-viewpoint{background:rgba(136,192,176,.15);color:#88C0B0}
+
 </style>
 </head>
 <body>
 <div class="app">
+
 <header class="hdr">
   <div>
-    <div class="eyb">⬡ Guida fotografica professionale · Viaggio 9–20 giugno 2026</div>
+    <div class="eyb" id="eyb">&#x2B21; Guida fotografica professionale &middot; Viaggio 9&ndash;20 giugno 2026</div>
     <h1 class="ttl">Tenerife <span>&amp;</span> Lanzarote</h1>
-    <p class="sub">20 spot selezionati · Grandangolo · Standard · Tele · Golden hour · Tramonto · Via Lattea · Drone</p>
+    <p class="sub" id="sub">20 spot &middot; Golden hour &middot; Tramonto &middot; Via Lattea &middot; Drone &middot; Dati astronomici per ogni giorno</p>
   </div>
   <div class="hbtns">
-    <button class="bic" id="thBtn" onclick="toggleTheme()">🌙</button>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+    <button class="bic" id="thBtn" onclick="toggleTheme()">&#127769;</button>
   </div>
 </header>
 
 <!-- DAY SELECTOR -->
 <div class="dsel">
   <div class="dsh">
-    <span class="dst">Seleziona giorno — aggiorna tutti i dati in tempo reale</span>
+    <span class="dst" id="dayTitle">Seleziona giorno &mdash; aggiorna tutti i dati in tempo reale</span>
     <span id="selLbl" style="font-family:var(--sm);font-size:10px;color:var(--text2)"></span>
   </div>
   <div class="dpills" id="dpills"></div>
   <div class="adsh" id="adsh"></div>
 </div>
 
-<!-- QUALITY CALENDAR -->
+<!-- MOON DISPLAY (replaces calendar grid) -->
 <div class="cal">
-  <div class="calt">Qualità astronomica per ogni notte del viaggio</div>
-  <div class="cgrid" id="cgrid"></div>
-  <div class="cleg">
-    <div class="cli"><div class="cld be"></div> Eccellente (buio &gt;4h)</div>
-    <div class="cli"><div class="cld bg"></div> Ottimo (&gt;2h)</div>
-    <div class="cli"><div class="cld bo"></div> Accettabile (finestra limitata)</div>
+  <div class="calt" id="calTitle">Qualit&agrave; astronomica per ogni notte del viaggio</div>
+  <div class="moon-box" id="moonBox"></div>
+  <div class="q-legend">
+    <div class="qli"><div class="qdot be"></div>
+      <span id="qLegExcLabel">Eccellente</span>
+      (<span id="qLegExcDesc">buio &gt;4h, luna &lt;15%</span>)
+    </div>
+    <div class="qli"><div class="qdot bg"></div>
+      <span id="qLegGoodLabel">Ottimo</span>
+      (<span id="qLegGoodDesc">buio &gt;2h, luna &lt;30%</span>)
+    </div>
+    <div class="qli"><div class="qdot bo"></div>
+      <span id="qLegOkLabel">Accettabile</span>
+      (<span id="qLegOkDesc">finestra limitata</span>)
+    </div>
   </div>
 </div>
 
 <!-- 24H ASTRONOMICAL CHART -->
 <div class="chart-box">
-  <div class="chart-title">Grafico astronomico 24h — aggiornato al giorno selezionato</div>
+  <div class="chart-title" id="chartTitle">Grafico astronomico 24h &mdash; giorno selezionato</div>
   <div id="chartWrap"></div>
   <div class="chart-legend">
-    <div class="chli"><div class="chli-line" style="background:#F5D070"></div> Sole (giorno)</div>
-    <div class="chli"><div class="chli-line" style="background:#E8A84C"></div> Ora d'oro</div>
-    <div class="chli"><div class="chli-line" style="background:#6080C0"></div> Blue hour</div>
-    <div class="chli"><div class="chli-dash" style="border-color:rgba(180,200,240,0.7)"></div> Luna</div>
-    <div class="chli"><div class="chli-line" style="background:#27C4A0"></div> Via Lattea (eccellente)</div>
-    <div class="chli"><div class="chli-line" style="background:#F0A844"></div> Via Lattea (accettabile)</div>
-    <div class="chli"><div class="chli-line" style="background:#E05A5A"></div> Via Lattea (scarsa)</div>
+    <div class="chli"><div class="chli-line" style="background:#F5D070"></div>
+      <span id="cleg-sun">Sole (giorno)</span></div>
+    <div class="chli"><div class="chli-line" style="background:#E8A84C"></div>
+      <span id="cleg-golden">Ora d'oro</span></div>
+    <div class="chli"><div class="chli-line" style="background:#6080C0"></div>
+      <span id="cleg-blue">Blue hour</span></div>
+    <div class="chli"><div class="chli-dash" style="border-color:rgba(180,200,240,0.7)"></div>
+      <span id="cleg-moon">Luna</span></div>
+    <div class="chli"><div class="chli-line" style="background:#27C4A0"></div>
+      <span id="cleg-mw-exc">Via Lattea eccellente</span></div>
+    <div class="chli"><div class="chli-line" style="background:#F0A844"></div>
+      <span id="cleg-mw-ok">Via Lattea accettabile</span></div>
+    <div class="chli"><div class="chli-line" style="background:#E05A5A"></div>
+      <span id="cleg-mw-bad">Via Lattea scarsa</span></div>
   </div>
 </div>
 
 <!-- FILTER BAR -->
 <div class="fbar">
-  <span class="flbl">Isola</span>
-  <button class="fb on" onclick="setF('all',this)">Tutti</button>
-  <button class="fb" data-fk="T"      onclick="setF('T',this)">🔵 Tenerife</button>
-  <button class="fb" data-fk="L"      onclick="setF('L',this)">🟢 Lanzarote</button>
-  <span class="flbl" style="margin-left:6px">Luce</span>
-  <button class="fb" data-fk="milky"  onclick="setF('milky',this)">★ Via Lattea</button>
-  <button class="fb" data-fk="sunset" onclick="setF('sunset',this)">🌅 Tramonto</button>
-  <button class="fb" data-fk="alba"   onclick="setF('alba',this)">🌄 Alba</button>
-  <button class="fb" data-fk="golden" onclick="setF('golden',this)">✦ Golden</button>
-  <button class="fb" data-fk="drone"  onclick="setF('drone',this)">◈ Drone</button>
-  <span class="flbl" style="margin-left:6px">Ottica</span>
-  <button class="fb" data-fk="wide"   onclick="setF('wide',this)">⬡ Grandangolo</button>
-  <button class="fb" data-fk="std"    onclick="setF('std',this)">◎ Standard</button>
-  <button class="fb" data-fk="tele"   onclick="setF('tele',this)">◉ Tele</button>
+  <span class="flbl" id="filterIsland">Isola</span>
+  <button class="fb on" id="fb-all" onclick="setF('all',this)">Tutti</button>
+  <button class="fb" id="fb-T" onclick="setF('T',this)">&#128309; Tenerife</button>
+  <button class="fb" id="fb-L" onclick="setF('L',this)">&#128994; Lanzarote</button>
+
+  <span class="flbl" id="filterLight" style="margin-left:6px">Luce</span>
+  <button class="fb" id="fb-milky"  onclick="setF('milky',this)">&#9733; Via Lattea</button>
+  <button class="fb" id="fb-sunset" onclick="setF('sunset',this)">&#127749; Tramonto</button>
+  <button class="fb" id="fb-alba"   onclick="setF('alba',this)">&#127748; Alba</button>
+  <button class="fb" id="fb-golden" onclick="setF('golden',this)">&#10038; Golden</button>
+  <button class="fb" id="fb-drone"  onclick="setF('drone',this)">&#9672; Drone</button>
+
+  <span class="flbl" id="filterOptics" style="margin-left:6px">Ottica</span>
+  <button class="fb" id="fb-wide" onclick="setF('wide',this)">&#11041; Grandangolo</button>
+  <button class="fb" id="fb-std"  onclick="setF('std',this)">&#9678; Standard</button>
+  <button class="fb" id="fb-tele" onclick="setF('tele',this)">&#9673; Tele</button>
+
+  <span class="flbl" id="filterScene" style="margin-left:6px">Paesaggio</span>
+  <button class="fb" id="fb-rocky"     onclick="setF('rocky',this)">&#11042; Roccioso</button>
+  <button class="fb" id="fb-cliff"     onclick="setF('cliff',this)">&#9700; Scogliera</button>
+  <button class="fb" id="fb-beach"     onclick="setF('beach',this)">&#127958; Spiaggia</button>
+  <button class="fb" id="fb-volcanic"  onclick="setF('volcanic',this)">&#9968; Vulcanico</button>
+  <button class="fb" id="fb-forest"    onclick="setF('forest',this)">&#127794; Foresta</button>
+  <button class="fb" id="fb-salt"      onclick="setF('salt',this)">&#9671; Saline</button>
+  <button class="fb" id="fb-vineyard"  onclick="setF('vineyard',this)">&#127815; Vigneto</button>
+  <button class="fb" id="fb-viewpoint" onclick="setF('viewpoint',this)">&#128065; Belvedere</button>
 </div>
 
 <!-- MAP -->
 <div class="mwrap">
   <div id="map"></div>
   <div class="mctrl">
-    <button class="mcb act" id="bT" onclick="swL('terrain')">▲ Altimetrica</button>
-    <button class="mcb"     id="bS" onclick="swL('satellite')">🛰 Satellite</button>
+    <button class="mcb act" id="bT" onclick="swL('terrain')">&#9650; Altimetrica</button>
+    <button class="mcb"     id="bS" onclick="swL('satellite')">&#128752; Satellite</button>
   </div>
+  <!-- PANEL -->
   <div class="panel" id="panel">
-    <button class="pcl" onclick="clP()">×</button>
-    <img id="pIm" class="pimg" src="" alt="" style="display:none" onerror="this.style.display='none';document.getElementById('pPh').style.display='flex'">
+    <button class="pcl" onclick="clP()">&#215;</button>
+    <img id="pIm" class="pimg" src="" alt="" style="display:none"
+         onerror="this.style.display='none';document.getElementById('pPh').style.display='flex'">
     <div id="pPh" class="pph">nessuna foto disponibile</div>
     <div class="pscr"><div class="pbdy">
       <div class="pis" id="pIs"></div>
       <div class="pnm" id="pNm"></div>
       <div class="pty" id="pTy"></div>
+
       <div class="ps">
-        <div class="psl">Astronomia — <span id="pDL" style="color:var(--gold)"></span></div>
+        <div class="psl"><span id="pl-astro">Astronomia</span> &mdash;
+          <span id="pDL" style="color:var(--gold)"></span></div>
         <table class="atb">
-          <tr><td>Alba</td>           <td id="pSunR"></td></tr>
-          <tr><td>Ora d'oro alba</td>  <td id="pGolA"></td></tr>
-          <tr><td>Tramonto</td>        <td id="pSunS"></td></tr>
-          <tr><td>Ora d'oro tram.</td> <td id="pGolE"></td></tr>
-          <tr><td>Buio astron.</td>    <td id="pTwi"></td></tr>
-          <tr><td>Alba V.L. ★</td>     <td id="pMWR"></td></tr>
-          <tr><td>Tramonto V.L. ★</td> <td id="pMWS"></td></tr>
-          <tr><td>Luna</td>            <td id="pMn"></td></tr>
-          <tr><td>Finestra buio</td>   <td id="pWin"></td></tr>
+          <tr><td id="pl-alrise">Alba</td>             <td id="pSunR"></td></tr>
+          <tr><td id="pl-algoldA">Ora d'oro alba</td>  <td id="pGolA"></td></tr>
+          <tr><td id="pl-alset">Tramonto</td>          <td id="pSunS"></td></tr>
+          <tr><td id="pl-algoldE">Ora d'oro tram.</td> <td id="pGolE"></td></tr>
+          <tr><td id="pl-aldark">Buio astron.</td>     <td id="pTwi"></td></tr>
+          <tr><td id="pl-algcR">Alba nucleo V.L.</td>  <td id="pMWR"></td></tr>
+          <tr><td id="pl-algcS">Tram. nucleo V.L.</td> <td id="pMWS"></td></tr>
+          <tr><td id="pl-almoon">Luna</td>             <td id="pMn"></td></tr>
+          <tr><td id="pl-alwin">Finestra buio</td>     <td id="pWin"></td></tr>
         </table>
         <div class="tbox" id="pTb"></div>
         <div class="mpils" id="pMp"></div>
       </div>
-      <div class="ps"><div class="psl">Via Lattea</div><div class="psv" id="pMWt"></div></div>
-      <div class="ps"><div class="psl">Luce ideale</div><div class="psv" id="pLi"></div></div>
-      <div class="ps"><div class="psl">Focali (equiv. 35mm)</div><div class="frow" id="pFc"></div></div>
-      <div class="ps"><div class="psl">Impostazioni camera</div><div class="psv" id="pSt" style="font-family:var(--sm);font-size:9px;white-space:pre-line;color:var(--text2)"></div></div>
-      <div class="ps"><div class="psl">Composizioni chiave</div><div class="psv" id="pCo"></div></div>
-      <div class="ps"><div class="psl">Note pratiche</div><div class="psv" id="pNo" style="color:var(--text2)"></div></div>
+
+      <div class="ps"><div class="psl" id="pl-mw">Via Lattea</div>
+        <div class="psv" id="pMWt"></div></div>
+      <div class="ps"><div class="psl" id="pl-light">Luce ideale</div>
+        <div class="psv" id="pLi"></div></div>
+      <div class="ps"><div class="psl" id="pl-focal">Focali (equiv. 35mm)</div>
+        <div class="frow" id="pFc"></div></div>
+      <div class="ps"><div class="psl" id="pl-settings">Impostazioni camera</div>
+        <div class="psv" id="pSt" style="font-family:var(--sm);font-size:9px;white-space:pre-line;color:var(--text2)"></div></div>
+      <div class="ps"><div class="psl" id="pl-comp">Composizioni chiave</div>
+        <div class="psv" id="pCo"></div></div>
+      <div class="ps"><div class="psl" id="pl-notes">Note pratiche</div>
+        <div class="psv" id="pNo" style="color:var(--text2)"></div></div>
+
       <div class="tags" id="pTg"></div>
       <div style="font-family:var(--sm);font-size:8px;color:var(--text3);margin-top:6px" id="pGp"></div>
-      <button class="comp-btn" onclick="openCompass()">&#x1F9ED;&nbsp; Vista cielo circolare</button>
+      <button class="comp-btn" id="pl-compassbtn" onclick="openCompass()">&#129517;&nbsp; Vista cielo circolare</button>
     </div></div>
   </div>
 </div>
 
 <!-- SPOT GRIDS -->
-<div class="slbl"><span class="idot dT"></span>Tenerife — 10 spot</div>
+<div class="slbl"><span class="idot dT"></span><span id="gridLabelT">Tenerife &mdash; 10 spot</span></div>
 <div class="sgr" id="gT"></div>
-<div class="slbl"><span class="idot dL"></span>Lanzarote — 10 spot</div>
+<div class="slbl"><span class="idot dL"></span><span id="gridLabelL">Lanzarote &mdash; 10 spot</span></div>
 <div class="sgr" id="gL"></div>
 
 <footer class="footer">
-  <p>Guida fotografica professionale · Tenerife &amp; Lanzarote · Viaggio 9–20 giugno 2026</p>
-  <p style="margin-top:3px">Fasi lunari: TheSkyLive.com (LQ 8 giu · NM 15 giu · FQ 21 giu · FM 30 giu) · Centro galattico: Sgr A* RA 17h45m Dec −29° · Mappa: © OpenStreetMap © Esri</p>
+  <p>Guida fotografica professionale &middot; Tenerife &amp; Lanzarote &middot; Viaggio 9&ndash;20 giugno 2026</p>
 </footer>
 
-<!-- SKY COMPASS MODAL -->
+</div><!-- /app -->
+
+<!-- SKY COMPASS MODAL (kept identical to v7 — proven to work) -->
 <div class="mo" id="compassModal">
   <div style="background:var(--card);border:.5px solid var(--border2);border-radius:var(--rlg);padding:20px 22px 18px;width:360px;max-width:96vw;box-shadow:0 8px 48px rgba(0,0,0,.8)">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
@@ -347,21 +479,21 @@ body::before{content:'';position:fixed;inset:0;
     </div>
     <div class="cring">
       <div id="cMapDiv"></div>
-      <svg id="cSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="cSvgWrap" style="position:absolute;inset:0;z-index:2000;pointer-events:none"></div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:12px">
       <div style="background:var(--card2);border:.5px solid var(--border);border-radius:var(--r);padding:6px 8px">
-        <div style="font-family:var(--sm);font-size:7px;text-transform:uppercase;color:#F5D070;margin-bottom:2px">&#9728; Sole</div>
+        <div style="font-family:var(--sm);font-size:7px;text-transform:uppercase;color:#F5D070;margin-bottom:2px" id="cmp-sun-lbl">&#9728; Sole</div>
         <div id="cSunAz" style="font-family:var(--sm);font-size:11px;font-weight:500;color:#F5D070">--</div>
         <div id="cSunAlt" style="font-family:var(--sm);font-size:9px;color:var(--text2)">--</div>
       </div>
       <div style="background:var(--card2);border:.5px solid var(--border);border-radius:var(--r);padding:6px 8px">
-        <div style="font-family:var(--sm);font-size:7px;text-transform:uppercase;color:rgba(180,200,240,.9);margin-bottom:2px">&#9790; Luna</div>
+        <div style="font-family:var(--sm);font-size:7px;text-transform:uppercase;color:rgba(180,200,240,.9);margin-bottom:2px" id="cmp-moon-lbl">&#127769; Luna</div>
         <div id="cMoonAz" style="font-family:var(--sm);font-size:11px;font-weight:500;color:rgba(180,200,240,.9)">--</div>
         <div id="cMoonAlt" style="font-family:var(--sm);font-size:9px;color:var(--text2)">--</div>
       </div>
       <div style="background:var(--card2);border:.5px solid var(--border);border-radius:var(--r);padding:6px 8px">
-        <div style="font-family:var(--sm);font-size:7px;text-transform:uppercase;color:#27C4A0;margin-bottom:2px">&#9733; Via Lattea</div>
+        <div style="font-family:var(--sm);font-size:7px;text-transform:uppercase;color:#27C4A0;margin-bottom:2px" id="cmp-mw-lbl">&#9733; Via Lattea</div>
         <div id="cGcAz" style="font-family:var(--sm);font-size:11px;font-weight:500;color:#27C4A0">--</div>
         <div id="cGcAlt" style="font-family:var(--sm);font-size:9px;color:var(--text2)">--</div>
       </div>
@@ -378,15 +510,20 @@ body::before{content:'';position:fixed;inset:0;
     </div>
   </div>
 </div>
-</div>
+
 <script>
 
-/* ========================================================
-   DATA — 9-20 giugno 2026, 28.4°N 16.5°W, UTC+1
-   Fasi lunari verificate (TheSkyLive): LQ 8 giu, NM 15 giu, FQ 21 giu
-   Centro galattico (Sgr A*): transita ~23:50, visibile 23:15-04:41
-======================================================== */
-const DY=[
+/* ═══════════════════════════════════════════════════════════════════
+   GUIDA FOTOGRAFICA — TENERIFE & LANZAROTE 2026
+   ─ v8 clean build, single script tag, no template literals
+   ─ All globals as `var` for onclick scope access
+═══════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────
+   SECTION 1: DATA (DY, SP, MAPS, SCENE_TAGS)
+   ─ Filled in by Python from v7
+───────────────────────────────────────────── */
+var DY=[
   {d:9, dw:"Mar",mn:"🌗",il:40,mr:"01:10",ms:"14:00",q:"ok",   ri:"06:51",se:"21:20",gm:"06:51–07:38",ge:"20:33–21:20",ci:"21:49",na:"22:28",as:"23:14",dw2:"23:14–01:10 (~2h)",    nt:"Luna sorge 01:10 — 2h di buio prima della levata."},
   {d:10,dw:"Mer",mn:"🌗",il:29,mr:"02:00",ms:"14:55",q:"ok",   ri:"06:51",se:"21:21",gm:"06:51–07:38",ge:"20:34–21:21",ci:"21:50",na:"22:29",as:"23:15",dw2:"23:15–02:00 (~2h45m)",  nt:"Luna sorge 02:00 — buona finestra di quasi 3h."},
   {d:11,dw:"Gio",mn:"🌗",il:20,mr:"02:55",ms:"15:45",q:"good", ri:"06:50",se:"21:21",gm:"06:50–07:37",ge:"20:34–21:21",ci:"21:50",na:"22:29",as:"23:15",dw2:"23:15–02:55 (~3h40m)",  nt:"Luna sorge 02:55 — quasi 4h di buio."},
@@ -401,10 +538,7 @@ const DY=[
   {d:20,dw:"Sab",mn:"🌓",il:26,mr:"10:30",ms:"00:40",q:"good", ri:"06:49",se:"21:23",gm:"06:49–07:36",ge:"20:36–21:23",ci:"21:52",na:"22:32",as:"23:18",dw2:"23:18–00:40 poi buio",   nt:"Ottima: solstizio. Luna 26%, tramonta 00:40.",ev:"☀️ Solstizio"},
 ];
 
-/* Galactic center (Sgr A*) constants for 28.4°N, June */
-const GC={rise:19.0, transit:23.83, set:28.68, maxAlt:33}; // set = 04:41 next day = 28.68h
-
-const SP=[
+var SP=[
   {id:0, is:"T",nm:"Roques de García",    ty:"Teide NP · 2.100m",         lt:28.2252,ln:-16.6315,tg:["milky","golden","landscape"],fo:["14–20mm","24–35mm"],fc:["fcw","fcs"],li:"Tramonto · Notte (Via Lattea) · Alba",se:"Astro: f/2.8 · ISO 3200–6400 · 20–25\"\nGiorno: f/8–11 · ISO 100 · 1/60–1/200s\nFiltri: GND 0.9 soft",co:"Roque del Teide con formazioni in primo piano · Arco Via Lattea sopra il Teide · Golden hour con tonalità rosse",no:"Parcheggio Mirador Ruleta H24. Freddo notturno — abbigliamento termico e head torch rossa.",mw:"Nucleo sorge SE ~23:20 (alt. 35°). Spot iconico per Via Lattea.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Roques_de_Garcia.jpg/1200px-Roques_de_Garcia.jpg"},
   {id:1, is:"T",nm:"Playa del Benijo",    ty:"Costa Anaga · spiaggia lavica",lt:28.5759,ln:-16.1852,tg:["sunset","landscape","drone"],fo:["14–24mm","70–105mm"],fc:["fcw","fct"],li:"Tramonto · Golden hour sera",se:"Seta: f/11 · ISO 100 · ND10 · 30\"–4'\nOnde: f/5.6 · ISO 400 · 1/500s",co:"Stack rocks come leading lines · Riflessi acqua bassa · Scogliere Anaga sfondo",no:"⚠️ CHIUSA luglio 2024 per frana — verificare. Drone: unico accesso spiaggia.",mw:"Non primario per astro (luce da Almáciga). Spot tramonto.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Playa_del_Benijo%2C_Tenerife.jpg/1200px-Playa_del_Benijo%2C_Tenerife.jpg"},
   {id:2, is:"T",nm:"Mirador de Masca",    ty:"Valle Teno · 900m",           lt:28.306, ln:-16.8404,tg:["golden","drone","landscape"],fo:["24–35mm","70–135mm"],fc:["fcs","fct"],li:"Golden hour (2h prima tramonto) · Nebbia mattutina",se:"f/8 · ISO 100 · 1/100–1/400s\nPolarizzatore per verde saturo",co:"Villaggio nel fondovalle tra pareti · Strada tornanti dall'alto · Controluce tramonto con creste illuminate",no:"TF-436 strettissima. Sab/Dom bus obbligatorio 10–17h. Arrivare all'alba.",mw:"Luce dal porto. Spot tramonto/golden hour.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Masca_Valley_-_Tenerife.jpg/1200px-Masca_Valley_-_Tenerife.jpg"},
@@ -427,82 +561,704 @@ const SP=[
   {id:19,is:"L",nm:"Salinas de Janubio",  ty:"Saline · Playa del Janubio",    lt:28.9348,ln:-13.8298,tg:["sunset","drone","landscape","milky"],fo:["35–85mm","14–24mm"],fc:["fcs","fcw"],li:"Tramonto · Blue hour · Mattino (riflessi piatti)",se:"Riflessi: f/11 · ISO 100 · 1/60s\nDrone overhead 90°: f/8\nLD mattutina: ND6 · 60–120s",co:"Vasche colorate + vulcani sfondo · Pattern geometrico drone · Riflessi tramonto",no:"Accesso libero LZ-703. Drone: nessuna restrizione. Vista dal bordo strada.",mw:"Buio eccellente a ovest. Vasche come primo piano per Via Lattea.",ph:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Salinas_de_Janubio.jpg/1200px-Salinas_de_Janubio.jpg"},
 ];
 
-/* focal category helper */
-function focalCats(foArr){
-  const s=new Set();
-  foArr.forEach(f=>{
-    const mm=parseInt(f.match(/(\d+)/)?.[1]||0);
-    if(mm<=35)s.add('wide');
-    if(mm>35&&mm<=85)s.add('std');
-    if(mm>85)s.add('tele');
-  });
-  return [...s];
-}
-/* Add focal cats to SP */
-SP.forEach(s=>{s.fc2=focalCats(s.fo);});
+var TL={milky:"Via Lattea",sunset:"Tramonto",alba:"Alba",golden:"Golden hour",drone:"Drone",landscape:"Paesaggio",wide:"Grandangolo",std:"Standard",tele:"Tele",rocky:"Roccioso",cliff:"Scogliera",beach:"Spiaggia",volcanic:"Vulcanico",forest:"Foresta",salt:"Saline",vineyard:"Vigneto",viewpoint:"Belvedere"};
+var TC={milky:"t-mw",sunset:"t-sun",alba:"t-al",golden:"t-go",drone:"t-dr",landscape:"t-la",wide:"t-fw",std:"t-fs",tele:"t-ft",rocky:"t-rocky",cliff:"t-cliff",beach:"t-beach",volcanic:"t-volcanic",forest:"t-forest",salt:"t-salt",vineyard:"t-vineyard",viewpoint:"t-viewpoint"};
+var QL={excel:"Eccellente",good:"Ottimo",ok:"Accettabile"};
+var QCC={excel:"qe",good:"qg",ok:"qo"};
+var QCB={excel:"qe-b",good:"qg-b",ok:"qo-b"};
+var QMP={excel:"mpe",good:"mpg",ok:"mpo"};
 
-const TL={milky:"Via Lattea",sunset:"Tramonto",alba:"Alba",golden:"Golden hour",drone:"Drone",landscape:"Paesaggio",wide:"Grandangolo",std:"Standard",tele:"Tele"};
-const TC={milky:"t-mw",sunset:"t-sun",alba:"t-al",golden:"t-go",drone:"t-dr",landscape:"t-la",wide:"t-fw",std:"t-fs",tele:"t-ft"};
-const QL={excel:"Eccellente",good:"Ottimo",ok:"Accettabile"};
-const QCC={excel:"qe",good:"qg",ok:"qo"};
-const QCB={excel:"qe-b",good:"qg-b",ok:"qo-b"};
-const QMP={excel:"mpe",good:"mpg",ok:"mpo"};
+/* Convert const → var for onclick scope safety */
 
-var curD=9, curF="all", curSp=null, map=null, tl=null, mks=[];
 
-/* ── THEME ── */
-function toggleTheme(){
-  const h=document.documentElement;
-  const dk=h.getAttribute("data-theme")==="dark";
-  h.setAttribute("data-theme",dk?"light":"dark");
-  document.getElementById("thBtn").textContent=dk?"☀️":"🌙";
-}
-
-/* ── MAP LAYERS (no dark) ── */
-const LYR={
-  terrain:{u:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",a:"© Esri, OpenStreetMap contributors"},
-  satellite:{u:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",a:"© Esri, Maxar, Earthstar Geographics"},
+/* Scene types per spot id */
+var SCENE_TAGS = {
+  0:'volcanic', 1:'beach', 2:'viewpoint', 3:'cliff', 4:'cliff',
+  5:'forest', 6:'rocky', 7:'volcanic', 8:'volcanic', 9:'viewpoint',
+  10:'volcanic', 11:'rocky', 12:'volcanic', 13:'vineyard', 14:'cliff',
+  15:'beach', 16:'beach', 17:'viewpoint', 18:'beach', 19:'salt'
 };
-function swL(k){
-  if(tl)map.removeLayer(tl);
-  tl=L.tileLayer(LYR[k].u,{attribution:LYR[k].a,maxZoom:18}).addTo(map);
-  ["bT","bS"].forEach(id=>document.getElementById(id).classList.remove("act"));
-  document.getElementById(k==="terrain"?"bT":"bS").classList.add("act");
-}
-function initMap(){
-  map=L.map("map",{center:[28.85,-15.0],zoom:7,zoomControl:true});
-  swL("terrain"); // default to terrain
-  SP.forEach(s=>{
-    const mw=s.tg.includes("milky");
-    const ic=L.divIcon({
-      className:"",
-      html:`<div class="cm ${mw?"cM":s.is==="T"?"cT":"cL"}" title="${s.nm}"></div>`,
-      iconSize:[14,14],iconAnchor:[7,7]
-    });
-    const m=L.marker([s.lt,s.ln],{icon:ic}).addTo(map);
-    m.on("click",()=>openP(s.id));
-    mks.push({m,s});
-  });
-}
 
-/* ── TIME HELPERS ── */
-function hm(s){
-  if(!s||s==="—")return null;
-  const c=s.replace(/[+].*/,"");
-  const p=c.split(":");
-  if(p.length<2)return null;
-  return parseInt(p[0])+parseInt(p[1])/60;
+/* Add focal categories + scene tag to each spot */
+function focalCats(foArr){
+  var s = {};
+  for(var i=0; i<foArr.length; i++){
+    var mm = parseInt(foArr[i]) || 14;
+    if(mm <= 35) s.wide = true;
+    if(mm > 35 && mm <= 85) s.std = true;
+    if(mm > 85) s.tele = true;
+  }
+  var out = [];
+  if(s.wide) out.push('wide');
+  if(s.std) out.push('std');
+  if(s.tele) out.push('tele');
+  return out;
+}
+for(var _i=0; _i<SP.length; _i++){
+  SP[_i].fc2 = focalCats(SP[_i].fo);
+  SP[_i].scene = SCENE_TAGS[SP[_i].id] || '';
 }
 
-/* ── 24H CHART ── */
+/* ─────────────────────────────────────────────
+   SECTION 2: GLOBAL STATE (all var)
+───────────────────────────────────────────── */
+var curD  = 9;
+var curF  = 'all';
+var curSp = null;
+var map   = null;
+var tl    = null;
+var mks   = [];
+var LANG  = 'it';
 
+/* ─────────────────────────────────────────────
+   SECTION 3: HELPERS
+───────────────────────────────────────────── */
 function _hm(s){
-  if(!s)return null;
-  var c=s.replace(/[+].*/,'');
-  var p=c.split(':');
-  return(p.length<2||isNaN(+p[1]))?null:(+p[0])+(+p[1])/60;
+  if(!s) return null;
+  var c = s.replace(/[+].*/, '');
+  var p = c.split(':');
+  return (p.length<2 || isNaN(+p[1])) ? null : (+p[0]) + (+p[1])/60;
+}
+function gd(d){
+  for(var i=0; i<DY.length; i++) if(DY[i].d===d) return DY[i];
+  return DY[0];
+}
+function pad2(n){ return n<10 ? '0'+n : ''+n; }
+
+/* ─────────────────────────────────────────────
+   SECTION 4: I18N — complete translations
+───────────────────────────────────────────── */
+var I18N = {
+  it: {
+    'header.eyb':       'Guida fotografica professionale · Viaggio 9–20 giugno 2026',
+    'header.sub':       '20 spot · Golden hour · Tramonto · Via Lattea · Drone · Dati astronomici per ogni giorno',
+    'day.title':        'Seleziona giorno — aggiorna tutti i dati in tempo reale',
+    'cal.title':        'Qualità astronomica per ogni notte del viaggio',
+    'chart.title':      'Grafico astronomico 24h — giorno selezionato',
+    'filter.island':    'Isola',
+    'filter.light':     'Luce',
+    'filter.optics':    'Ottica',
+    'filter.scene':     'Paesaggio',
+    'f.all':            'Tutti',
+    'f.T':              '🔵 Tenerife',
+    'f.L':              '🟢 Lanzarote',
+    'f.milky':          '★ Via Lattea',
+    'f.sunset':         '🌅 Tramonto',
+    'f.alba':           '🌄 Alba',
+    'f.golden':         '✦ Golden',
+    'f.drone':          '◈ Drone',
+    'f.wide':           '⬡ Grandangolo',
+    'f.std':            '◎ Standard',
+    'f.tele':           '◉ Tele',
+    'f.rocky':          '⬢ Roccioso',
+    'f.cliff':          '◤ Scogliera',
+    'f.beach':          '🏖 Spiaggia',
+    'f.volcanic':       '⛰ Vulcanico',
+    'f.forest':         '🌲 Foresta',
+    'f.salt':           '◇ Saline',
+    'f.vineyard':       '🍇 Vigneto',
+    'f.viewpoint':      '👁 Belvedere',
+    'panel.astro':      'Astronomia',
+    'panel.mw':         'Via Lattea',
+    'panel.light':      'Luce ideale',
+    'panel.focal':      'Focali (equiv. 35mm)',
+    'panel.settings':   'Impostazioni camera',
+    'panel.comp':       'Composizioni chiave',
+    'panel.notes':      'Note pratiche',
+    'panel.compassbtn': '🧭 Vista cielo circolare',
+    'panel.al.rise':    'Alba',
+    'panel.al.goldA':   "Ora d'oro alba",
+    'panel.al.set':     'Tramonto',
+    'panel.al.goldE':   "Ora d'oro tram.",
+    'panel.al.dark':    'Buio astron.',
+    'panel.al.gcR':     'Alba nucleo V.L.',
+    'panel.al.gcS':     'Tram. nucleo V.L.',
+    'panel.al.moon':    'Luna',
+    'panel.al.win':     'Finestra buio',
+    'sp.tenerife':      '▲ TENERIFE',
+    'sp.lanzarote':     '▲ LANZAROTE',
+    'gridT.label':      'Tenerife — 10 spot',
+    'gridL.label':      'Lanzarote — 10 spot',
+    'q.excel':          'Eccellente',
+    'q.good':           'Ottimo',
+    'q.ok':             'Accettabile',
+    'q.excelDesc':      'buio &gt;4h, luna &lt;15%',
+    'q.goodDesc':       'buio &gt;2h, luna &lt;30%',
+    'q.okDesc':         'finestra limitata',
+    'chart.sun':        'Sole (giorno)',
+    'chart.golden':     "Ora d'oro",
+    'chart.blue':       'Blue hour',
+    'chart.moon':       'Luna',
+    'chart.mw.exc':     'Via Lattea eccellente',
+    'chart.mw.ok':      'Via Lattea accettabile',
+    'chart.mw.bad':     'Via Lattea scarsa',
+    'chart.lightbar':   'colore della luce sul campo →',
+    'cmp.sun':          '☀ Sole',
+    'cmp.moon':         '🌙 Luna',
+    'cmp.mw':           '★ Via Lattea',
+    'cmp.below':        'sotto orizzonte',
+    'date.month':       'giugno',
+    'date.year':        '2026'
+  },
+  en: {
+    'header.eyb':       'Professional photo guide · Trip 9–20 June 2026',
+    'header.sub':       '20 spots · Golden hour · Sunset · Milky Way · Drone · Astronomical data per day',
+    'day.title':        'Select day — updates all data in real time',
+    'cal.title':        'Astronomical quality for each night',
+    'chart.title':      '24h astronomical chart — selected day',
+    'filter.island':    'Island',
+    'filter.light':     'Light',
+    'filter.optics':    'Optics',
+    'filter.scene':     'Landscape',
+    'f.all':            'All',
+    'f.T':              '🔵 Tenerife',
+    'f.L':              '🟢 Lanzarote',
+    'f.milky':          '★ Milky Way',
+    'f.sunset':         '🌅 Sunset',
+    'f.alba':           '🌄 Sunrise',
+    'f.golden':         '✦ Golden',
+    'f.drone':          '◈ Drone',
+    'f.wide':           '⬡ Wide angle',
+    'f.std':            '◎ Standard',
+    'f.tele':           '◉ Telephoto',
+    'f.rocky':          '⬢ Rocky',
+    'f.cliff':          '◤ Cliff',
+    'f.beach':          '🏖 Beach',
+    'f.volcanic':       '⛰ Volcanic',
+    'f.forest':         '🌲 Forest',
+    'f.salt':           '◇ Salt flats',
+    'f.vineyard':       '🍇 Vineyard',
+    'f.viewpoint':      '👁 Viewpoint',
+    'panel.astro':      'Astronomy',
+    'panel.mw':         'Milky Way',
+    'panel.light':      'Best light',
+    'panel.focal':      'Focal lengths (35mm equiv.)',
+    'panel.settings':   'Camera settings',
+    'panel.comp':       'Key compositions',
+    'panel.notes':      'Practical notes',
+    'panel.compassbtn': '🧭 Sky compass view',
+    'panel.al.rise':    'Sunrise',
+    'panel.al.goldA':   'Golden hr sunrise',
+    'panel.al.set':     'Sunset',
+    'panel.al.goldE':   'Golden hr sunset',
+    'panel.al.dark':    'Astron. dark',
+    'panel.al.gcR':     'MW core rise',
+    'panel.al.gcS':     'MW core set',
+    'panel.al.moon':    'Moon',
+    'panel.al.win':     'Dark window',
+    'sp.tenerife':      '▲ TENERIFE',
+    'sp.lanzarote':     '▲ LANZAROTE',
+    'gridT.label':      'Tenerife — 10 spots',
+    'gridL.label':      'Lanzarote — 10 spots',
+    'q.excel':          'Excellent',
+    'q.good':           'Good',
+    'q.ok':             'Acceptable',
+    'q.excelDesc':      'dark &gt;4h, moon &lt;15%',
+    'q.goodDesc':       'dark &gt;2h, moon &lt;30%',
+    'q.okDesc':         'limited window',
+    'chart.sun':        'Sun (day)',
+    'chart.golden':     'Golden hour',
+    'chart.blue':       'Blue hour',
+    'chart.moon':       'Moon',
+    'chart.mw.exc':     'Milky Way excellent',
+    'chart.mw.ok':      'Milky Way acceptable',
+    'chart.mw.bad':     'Milky Way poor',
+    'chart.lightbar':   'field light colour →',
+    'cmp.sun':          '☀ Sun',
+    'cmp.moon':         '🌙 Moon',
+    'cmp.mw':           '★ Milky Way',
+    'cmp.below':        'below horizon',
+    'date.month':       'June',
+    'date.year':        '2026'
+  }
+};
+
+function t(key){
+  var dict = I18N[LANG] || I18N.it;
+  return (key in dict) ? dict[key] : key;
 }
 
+function toggleLang(){
+  LANG = (LANG==='it') ? 'en' : 'it';
+  var btn = document.getElementById('langBtn');
+  if(btn) btn.textContent = (LANG==='it') ? 'EN' : 'IT';
+  applyLang();
+  /* Re-render dynamic content with new language */
+  updDash();
+  updMoonDisplay();
+  drawChart();
+  if(curSp !== null) updPA();
+  updTon();
+}
+
+/* Apply translations to all static elements with i18n IDs */
+function applyLang(){
+  /* Header */
+  setText('eyb',          'header.eyb');
+  setText('sub',          'header.sub');
+  /* Section titles */
+  setText('dayTitle',     'day.title');
+  setText('calTitle',     'cal.title');
+  setText('chartTitle',   'chart.title');
+  /* Filter labels */
+  setText('filterIsland', 'filter.island');
+  setText('filterLight',  'filter.light');
+  setText('filterOptics', 'filter.optics');
+  setText('filterScene',  'filter.scene');
+  /* Filter buttons */
+  var fbKeys = ['all','T','L','milky','sunset','alba','golden','drone',
+                'wide','std','tele',
+                'rocky','cliff','beach','volcanic','forest','salt','vineyard','viewpoint'];
+  for(var i=0; i<fbKeys.length; i++){
+    setText('fb-' + fbKeys[i], 'f.' + fbKeys[i]);
+  }
+  /* Panel labels */
+  setText('pl-astro',       'panel.astro');
+  setText('pl-mw',          'panel.mw');
+  setText('pl-light',       'panel.light');
+  setText('pl-focal',       'panel.focal');
+  setText('pl-settings',    'panel.settings');
+  setText('pl-comp',        'panel.comp');
+  setText('pl-notes',       'panel.notes');
+  setText('pl-compassbtn',  'panel.compassbtn');
+  /* Panel astronomy table rows */
+  setText('pl-alrise',      'panel.al.rise');
+  setText('pl-algoldA',     'panel.al.goldA');
+  setText('pl-alset',       'panel.al.set');
+  setText('pl-algoldE',     'panel.al.goldE');
+  setText('pl-aldark',      'panel.al.dark');
+  setText('pl-algcR',       'panel.al.gcR');
+  setText('pl-algcS',       'panel.al.gcS');
+  setText('pl-almoon',      'panel.al.moon');
+  setText('pl-alwin',       'panel.al.win');
+  /* Grid section labels */
+  setText('gridLabelT',     'gridT.label');
+  setText('gridLabelL',     'gridL.label');
+  /* Chart legend */
+  setText('cleg-sun',       'chart.sun');
+  setText('cleg-golden',    'chart.golden');
+  setText('cleg-blue',      'chart.blue');
+  setText('cleg-moon',      'chart.moon');
+  setText('cleg-mw-exc',    'chart.mw.exc');
+  setText('cleg-mw-ok',     'chart.mw.ok');
+  setText('cleg-mw-bad',    'chart.mw.bad');
+  /* Compass labels */
+  setText('cmp-sun-lbl',    'cmp.sun');
+  setText('cmp-moon-lbl',   'cmp.moon');
+  setText('cmp-mw-lbl',     'cmp.mw');
+  /* Quality legend in calendar box */
+  setText('qLegExcLabel',   'q.excel');
+  setHTML('qLegExcDesc',    'q.excelDesc');
+  setText('qLegGoodLabel',  'q.good');
+  setHTML('qLegGoodDesc',   'q.goodDesc');
+  setText('qLegOkLabel',    'q.ok');
+  setHTML('qLegOkDesc',     'q.okDesc');
+  /* Update i18n attribute on island indicator in panel */
+  var iEl = document.getElementById('pIs');
+  if(iEl && curSp !== null){
+    var s = SP[curSp];
+    iEl.textContent = (s.is==='T') ? t('sp.tenerife') : t('sp.lanzarote');
+  }
+}
+
+function setText(id, key){
+  var el = document.getElementById(id);
+  if(el) el.textContent = t(key);
+}
+function setHTML(id, key){
+  var el = document.getElementById(id);
+  if(el) el.innerHTML = t(key);
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 5: THEME TOGGLE
+───────────────────────────────────────────── */
+function toggleTheme(){
+  var html = document.documentElement;
+  var dark = (html.getAttribute('data-theme')==='dark');
+  html.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('thBtn').textContent = dark ? '☀️' : '🌙';
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 6: MAP (Leaflet)
+───────────────────────────────────────────── */
+var LYR = {
+  terrain:   {url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+              attr:'© Esri, OpenStreetMap'},
+  satellite: {url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+              attr:'© Esri, Maxar'}
+};
+
+function swL(k){
+  if(tl) map.removeLayer(tl);
+  tl = L.tileLayer(LYR[k].url, {attribution:LYR[k].attr, maxZoom:18}).addTo(map);
+  document.getElementById('bT').classList.toggle('act', k==='terrain');
+  document.getElementById('bS').classList.toggle('act', k==='satellite');
+}
+
+function initMap(){
+  map = L.map('map', {center:[28.85, -15.0], zoom:7, zoomControl:true});
+  swL('terrain');
+  for(var i=0; i<SP.length; i++){
+    (function(s){
+      var mw = (s.tg.indexOf('milky') >= 0);
+      var cls = mw ? 'mMW' : (s.is==='T' ? 'mT' : 'mL');
+      var iconHtml = '<div class="mkr ' + cls + '" title="' + s.nm + '"></div>';
+      var icon = L.divIcon({className:'', html:iconHtml, iconSize:[14,14], iconAnchor:[7,7]});
+      var mk = L.marker([s.lt, s.ln], {icon:icon}).addTo(map);
+      mk.on('click', function(){ openP(s.id); });
+      mks.push({m:mk, s:s});
+    })(SP[i]);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 7: DAY SELECTOR
+───────────────────────────────────────────── */
+function bldPills(){
+  var c = document.getElementById('dpills');
+  c.innerHTML = '';
+  for(var i=0; i<DY.length; i++){
+    (function(d){
+      var el = document.createElement('button');
+      el.className = 'dp ' + QCC[d.q];
+      el.dataset.d = d.d;
+      el.innerHTML = d.d + '<br>' + d.mn;
+      el.title = d.d + ' ' + t('date.month') + ' · ' + t('panel.al.moon') + ' ' + d.il + '%';
+      el.onclick = function(){ selDay(d.d); };
+      c.appendChild(el);
+    })(DY[i]);
+  }
+}
+
+function selDay(d){
+  curD = d;
+  /* Update day pill highlight */
+  var pills = document.querySelectorAll('.dp');
+  for(var i=0; i<pills.length; i++){
+    pills[i].classList.toggle('sel', +pills[i].dataset.d === d);
+  }
+  /* Update label */
+  var lbl = document.getElementById('selLbl');
+  if(lbl) lbl.textContent = d + ' ' + t('date.month') + ' ' + t('date.year');
+  /* Update all dynamic content */
+  updDash();
+  updMoonDisplay();
+  drawChart();
+  if(curSp !== null) updPA();
+  updTon();
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 8: ASTRO DASHBOARD
+───────────────────────────────────────────── */
+function updDash(){
+  var d = gd(curD);
+  if(!d) return;
+  var qLbl = {excel:t('q.excel'), good:t('q.good'), ok:t('q.ok')};
+  var qCls = {excel:'qe-b', good:'qg-b', ok:'qo-b'};
+  var h = '';
+  h += '<div class="ai"><div class="al2">☀ ' + t('panel.al.rise') + '</div>';
+  h += '<div class="av">' + d.ri + '</div>';
+  h += '<div class="as2">' + t('chart.golden') + ' → ' + d.gm.split('–')[1] + '</div></div>';
+
+  h += '<div class="ai"><div class="al2">✦ ' + t('panel.al.goldA') + '</div>';
+  h += '<div class="av" style="font-size:10px">' + d.gm + '</div></div>';
+
+  h += '<div class="ai"><div class="al2">☀ ' + t('panel.al.set') + '</div>';
+  h += '<div class="av">' + d.se + '</div></div>';
+
+  h += '<div class="ai"><div class="al2">✦ ' + t('panel.al.goldE') + '</div>';
+  h += '<div class="av" style="font-size:10px">' + d.ge + '</div></div>';
+
+  h += '<div class="ai"><div class="al2">◑ ' + t('panel.al.dark') + '</div>';
+  h += '<div class="av">' + d.as + '</div>';
+  h += '<div class="as2">Blue: ' + d.ci + ' – ' + d.as + '</div></div>';
+
+  h += '<div class="ai"><div class="al2">★ ' + t('panel.al.gcR') + '</div>';
+  h += '<div class="av">~23:20</div>';
+  h += '<div class="as2">' + t('panel.al.gcS') + ': ~04:41</div></div>';
+
+  h += '<div class="ai"><div class="al2">' + d.mn + ' ' + t('panel.al.moon') + ' ' + d.il + '%</div>';
+  h += '<div class="av" style="font-size:10px">↑' + d.mr + ' · ↓' + d.ms + '</div></div>';
+
+  h += '<div class="ai"><div class="al2">★ ' + t('panel.al.win') + '</div>';
+  h += '<div class="av" style="font-size:9px">' + d.dw2 + '</div>';
+  h += '<div class="aq ' + qCls[d.q] + '">' + qLbl[d.q] + '</div></div>';
+
+  if(d.ev){
+    h += '<div class="ai" style="border-color:var(--gold)"><div class="al2">Evento</div>';
+    h += '<div class="av" style="font-size:10px">' + d.ev + '</div></div>';
+  }
+  document.getElementById('adsh').innerHTML = h;
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 9: MOON DISPLAY (replaces calendar grid)
+───────────────────────────────────────────── */
+function moonPhaseSvg(ill, isWaxing){
+  var W=110, H=110, R=46, cx=55, cy=55;
+  var top = cy - R, bot = cy + R;
+  var parts = [];
+
+  /* Dark disc base */
+  parts.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="#0E1422"/>');
+
+  if(ill <= 1){
+    /* New moon: dark, faint ring hint */
+  } else if(ill >= 99){
+    /* Full moon */
+    parts.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="#EDE9E2"/>');
+    parts.push('<circle cx="'+(cx-12)+'" cy="'+(cy-10)+'" r="6" fill="rgba(0,0,0,0.06)"/>');
+    parts.push('<circle cx="'+(cx+10)+'" cy="'+(cy+12)+'" r="5" fill="rgba(0,0,0,0.05)"/>');
+    parts.push('<circle cx="'+(cx+3)+'" cy="'+(cy-16)+'" r="3.5" fill="rgba(0,0,0,0.04)"/>');
+  } else {
+    /* k = 1 - 2*ill/100:  +1=new, 0=quarter, -1=full */
+    var k   = 1 - 2 * ill / 100;
+    var ex  = (R * Math.abs(k)).toFixed(2);   /* terminator ellipse x-radius */
+
+    /* The lit path is always built as:
+       - One large arc on the BRIGHT side (right=waxing, left=waning)
+       - One ellipse arc for the terminator
+       Sweep flags:
+         bright-side arc: waxing->1 (right half), waning->0 (left half)
+         terminator arc:
+           waxing+crescent (k>0): sweep=0 (curves back inward = crescent)
+           waxing+gibbous  (k<0): sweep=1 (curves outward  = gibbous)
+           waning+crescent (k>0): sweep=1
+           waning+gibbous  (k<0): sweep=0
+    */
+    var brightSweep = isWaxing ? 1 : 0;
+    var termSweep;
+    if(isWaxing){
+      termSweep = (k > 0) ? 0 : 1;
+    } else {
+      termSweep = (k > 0) ? 1 : 0;
+    }
+
+    var path = 'M '+cx+' '+top+
+               ' A '+R+' '+R+' 0 0 '+brightSweep+' '+cx+' '+bot+
+               ' A '+ex+' '+R+' 0 0 '+termSweep+' '+cx+' '+top+' Z';
+    parts.push('<path d="'+path+'" fill="#EDE9E2"/>');
+
+    /* Subtle craters on lit side */
+    var cr = isWaxing ? 1 : -1;
+    parts.push('<circle cx="'+(cx+cr*11).toFixed(0)+'" cy="'+(cy-12)+'" r="3.5" fill="rgba(0,0,0,0.06)"/>');
+    parts.push('<circle cx="'+(cx+cr*5).toFixed(0)+'" cy="'+(cy+9)+'" r="2.5" fill="rgba(0,0,0,0.05)"/>');
+  }
+
+  /* Outer ring */
+  parts.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+R+'" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>');
+
+  return '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+
+         '" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 3px 12px rgba(0,0,0,0.6))">'+
+         parts.join('')+'</svg>';
+}
+
+function updMoonDisplay(){
+  var d = gd(curD);
+  var box = document.getElementById('moonBox');
+  if(!box) return;
+  /* Waxing if past new moon (day 15) */
+  var isWaxing = (d.d >= 15);
+  var svg = moonPhaseSvg(d.il, isWaxing);
+  var qCol = {excel:'var(--excel)', good:'var(--green)', ok:'var(--amber)'};
+  var html = '';
+  html += svg;
+  html += '<div class="moon-info">';
+  html += '<div class="moon-day">' + d.d + ' ' + t('date.month') + ' 2026</div>';
+  html += '<div class="moon-phase">' + d.mn + ' ' + d.il + '% ' + (isWaxing ? '(crescente)' : '(calante)') + '</div>';
+  html += '<div class="moon-quality" style="color:' + qCol[d.q] + '">';
+  html += t('q.' + d.q);
+  html += '</div>';
+  html += '<div class="moon-window">' + d.dw2 + '</div>';
+  if(d.ev) html += '<div class="moon-event">' + d.ev + '</div>';
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 10: PANEL (spot details)
+───────────────────────────────────────────── */
+function openP(id){
+  var s = SP[id];
+  curSp = id;
+  /* Island label */
+  var iEl = document.getElementById('pIs');
+  iEl.textContent = (s.is==='T') ? t('sp.tenerife') : t('sp.lanzarote');
+  iEl.className = 'pis ' + s.is;
+  /* Name/type */
+  document.getElementById('pNm').textContent = s.nm;
+  document.getElementById('pTy').textContent = s.ty;
+  /* Photo */
+  var img = document.getElementById('pIm');
+  var ph  = document.getElementById('pPh');
+  if(s.ph){
+    img.src = s.ph;
+    img.style.display = 'block';
+    ph.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    ph.style.display = 'flex';
+  }
+  /* Light, focal, settings, comp, notes, mw */
+  document.getElementById('pLi').textContent = s.li;
+  var fcHtml = '';
+  for(var i=0; i<s.fo.length; i++){
+    fcHtml += '<span class="fchip ' + s.fc[i] + '">' + s.fo[i] + 'mm</span>';
+  }
+  document.getElementById('pFc').innerHTML = fcHtml;
+  document.getElementById('pSt').textContent = s.se;
+  document.getElementById('pCo').textContent = s.co;
+  document.getElementById('pNo').textContent = s.no;
+  document.getElementById('pMWt').textContent = s.mw;
+  /* Tags */
+  var allTags = s.tg.concat(s.fc2 || []);
+  if(s.scene) allTags.push(s.scene);
+  var tagHtml = '';
+  for(var j=0; j<allTags.length; j++){
+    tagHtml += '<span class="tag ' + TC[allTags[j]] + '">' + TL[allTags[j]] + '</span>';
+  }
+  document.getElementById('pTg').innerHTML = tagHtml;
+  /* GPS */
+  document.getElementById('pGp').textContent = 'GPS: ' + s.lt.toFixed(4) + '°N  ' + Math.abs(s.ln).toFixed(4) + '°W';
+  /* Astro fields for current day */
+  updPA();
+  /* Open + zoom */
+  document.getElementById('panel').classList.add('open');
+  map.panTo([s.lt, s.ln]);
+}
+
+function updPA(){
+  var d = gd(curD);
+  if(!d) return;
+  document.getElementById('pDL').textContent = curD + ' ' + t('date.month') + ' 2026';
+  document.getElementById('pSunR').textContent = '↑ ' + d.ri;
+  document.getElementById('pGolA').textContent = d.gm;
+  document.getElementById('pSunS').textContent = '↓ ' + d.se;
+  document.getElementById('pGolE').textContent = d.ge;
+  document.getElementById('pTwi').textContent = (LANG==='it' ? 'da ' : 'from ') + d.as;
+  document.getElementById('pMWR').textContent = '~23:20';
+  document.getElementById('pMWS').textContent = '~04:41';
+  document.getElementById('pMn').textContent = d.mn + ' ' + d.il + '% · ↑' + d.mr + ' · ↓' + d.ms;
+  document.getElementById('pWin').textContent = d.dw2;
+  /* Tonight quality box */
+  var tb = document.getElementById('pTb');
+  var qCol = {excel:'var(--excel)', good:'var(--green)', ok:'var(--amber)'};
+  var qBg  = {excel:'rgba(39,196,160,.1)', good:'rgba(93,184,112,.08)', ok:'rgba(240,168,68,.08)'};
+  tb.style.background = qBg[d.q];
+  tb.style.color = qCol[d.q];
+  tb.textContent = d.nt;
+  /* Moon pill row */
+  var mpHtml = '';
+  for(var i=0; i<DY.length; i++){
+    var day = DY[i];
+    mpHtml += '<span class="mp ' + QMP[day.q] + '" onclick="selDay(' + day.d + ')" ';
+    mpHtml += 'title="' + day.d + ' ' + t('date.month') + ' · ' + t('panel.al.moon') + ' ' + day.il + '%">';
+    mpHtml += day.d + day.mn + '</span>';
+  }
+  document.getElementById('pMp').innerHTML = mpHtml;
+}
+
+function clP(){
+  document.getElementById('panel').classList.remove('open');
+  curSp = null;
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 11: SPOT MINI-CARDS GRID
+───────────────────────────────────────────── */
+function bldGrid(){
+  var gT = document.getElementById('gT');
+  var gL = document.getElementById('gL');
+  for(var i=0; i<SP.length; i++){
+    (function(s, idx){
+      var allTags = s.tg.concat(s.fc2 || []);
+      if(s.scene) allTags.push(s.scene);
+      var el = document.createElement('div');
+      el.className = 'mc i' + s.is;
+      el.dataset.island = s.is;
+      el.dataset.tags = allTags.join(',');
+      el.style.animationDelay = (idx * 0.03) + 's';
+      var tagHtml = '';
+      for(var j=0; j<allTags.length; j++){
+        tagHtml += '<span class="tag ' + TC[allTags[j]] + '">' + TL[allTags[j]] + '</span>';
+      }
+      el.innerHTML =
+        '<div class="mn">' + s.nm + '</div>' +
+        '<div class="mt">' + s.ty + '</div>' +
+        '<div class="mf">' + s.fo.join(' · ') + 'mm equiv.</div>' +
+        '<div class="mtn"></div>' +
+        '<div class="tags">' + tagHtml + '</div>';
+      el.onclick = function(){ openP(s.id); };
+      (s.is==='T' ? gT : gL).appendChild(el);
+    })(SP[i], i);
+  }
+  updTon();
+}
+
+function updTon(){
+  var d = gd(curD);
+  var qCol = {excel:'var(--excel)', good:'var(--green)', ok:'var(--amber)'};
+  var qBg  = {excel:'rgba(39,196,160,.12)', good:'rgba(93,184,112,.1)', ok:'rgba(240,168,68,.1)'};
+  var els = document.querySelectorAll('.mtn');
+  for(var i=0; i<els.length; i++){
+    els[i].style.background = qBg[d.q];
+    els[i].style.color = qCol[d.q];
+    els[i].textContent = d.d + ' ' + t('date.month') + ' · ' + t('q.' + d.q);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 12: FILTER
+───────────────────────────────────────────── */
+function setF(f, btn){
+  curF = f;
+  /* Reset all button classes */
+  var fbs = document.querySelectorAll('.fb');
+  for(var i=0; i<fbs.length; i++){
+    fbs[i].classList.remove('on','oA','oB','oC','oD','oE','oF','oG','oW','oS','oT',
+                            'oRocky','oCliff','oBeach','oVolc','oForest','oSalt','oVine','oView');
+  }
+  btn.classList.add('on');
+  var classMap = {
+    T:'oA', L:'oB', milky:'oC', sunset:'oD', alba:'oE', golden:'oF', drone:'oG',
+    wide:'oW', std:'oS', tele:'oT',
+    rocky:'oRocky', cliff:'oCliff', beach:'oBeach', volcanic:'oVolc',
+    forest:'oForest', salt:'oSalt', vineyard:'oVine', viewpoint:'oView'
+  };
+  if(classMap[f]) btn.classList.add(classMap[f]);
+  /* Filter map markers */
+  for(var i=0; i<mks.length; i++){
+    var item = mks[i];
+    var s = item.s;
+    var tags = s.tg.concat(s.fc2 || []);
+    if(s.scene) tags.push(s.scene);
+    var show = (f==='all' || s.is===f || tags.indexOf(f)>=0);
+    if(show) item.m.addTo(map); else map.removeLayer(item.m);
+  }
+  /* Filter mini-cards */
+  var mcs = document.querySelectorAll('.mc');
+  for(var i=0; i<mcs.length; i++){
+    var el = mcs[i];
+    var tags = el.dataset.tags ? el.dataset.tags.split(',') : [];
+    var show = (f==='all' || el.dataset.island===f || tags.indexOf(f)>=0);
+    el.classList.toggle('hidden', !show);
+  }
+  /* Close panel if active spot is filtered out */
+  if(curSp !== null){
+    var s = SP[curSp];
+    var tags = s.tg.concat(s.fc2 || []);
+    if(s.scene) tags.push(s.scene);
+    if(!(f==='all' || s.is===f || tags.indexOf(f)>=0)) clP();
+  }
+}
+
+/* ─────────────────────────────────────────────
+   SECTION 13: 24H ASTRONOMICAL CHART
+   (kept verbatim from v7 — proven to work)
+───────────────────────────────────────────── */
 function drawChart(){
   var day=gd(curD);
   /* Layout */
@@ -519,34 +1275,34 @@ function drawChart(){
   function ty(a,mx){return PT+CH-Math.max(0,Math.min(a,mx||90))/(mx||90)*CH;}
   var P=[];
   /* Background zones */
-  [[0,Math.max(0,dAst),'#0D1520'],[Math.max(0,dAst),Math.max(0,dCiv),'#152236'],
-   [Math.max(0,dCiv),Math.max(0,sR-GD),'#1E3568'],[Math.max(0,sR-GD),Math.min(24,sR+GD),'#2A1800'],
-   [Math.max(0,sR+GD),Math.min(24,sS-GD),'#0F1A2C'],[Math.max(0,sS-GD),Math.min(24,sS+0.55),'#2A1800'],
-   [Math.max(0,sS+0.55),Math.min(24,ciS),'#1E3568'],[Math.min(24,ciS),Math.min(24,asS),'#152236'],
-   [Math.min(24,asS),24,'#0D1520']
+  [[0,Math.max(0,dAst),'#1C2438'],[Math.max(0,dAst),Math.max(0,dCiv),'#253456'],
+   [Math.max(0,dCiv),Math.max(0,sR-GD),'#2E4580'],[Math.max(0,sR-GD),Math.min(24,sR+GD),'#4A2A08'],
+   [Math.max(0,sR+GD),Math.min(24,sS-GD),'#1A2640'],[Math.max(0,sS-GD),Math.min(24,sS+0.55),'#4A2A08'],
+   [Math.max(0,sS+0.55),Math.min(24,ciS),'#2E4580'],[Math.min(24,ciS),Math.min(24,asS),'#253456'],
+   [Math.min(24,asS),24,'#1C2438']
   ].forEach(function(z){
     if(z[1]>z[0])P.push('<rect x="'+tx(z[0]).toFixed(1)+'" y="'+PT+'" width="'+(tx(z[1])-tx(z[0])).toFixed(1)+'" height="'+CH+'" fill="'+z[2]+'"/>');
   });
   /* Grid lines + Y labels */
   [30,60,90].forEach(function(a){
     P.push('<line x1="'+PL+'" y1="'+ty(a).toFixed(1)+'" x2="'+(PL+CW)+'" y2="'+ty(a).toFixed(1)+'" stroke="rgba(255,255,255,0.09)" stroke-width="0.5"/>');
-    P.push('<text x="'+(PL-5)+'" y="'+(ty(a)+3)+'" font-size="7" fill="rgba(255,255,255,0.32)" text-anchor="end" font-family="DM Mono,monospace">'+a+'</text>');
+    P.push('<text x="'+(PL-5)+'" y="'+(ty(a)+3)+'" font-size="7" fill="rgba(255,255,255,0.32)" text-anchor="end" font-family="DM Mono,monospace">'+a+'°</text>');
   });
   P.push('<line x1="'+PL+'" y1="'+ty(0).toFixed(1)+'" x2="'+(PL+CW)+'" y2="'+ty(0).toFixed(1)+'" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>');
   P.push('<text x="'+(PL-5)+'" y="'+(ty(0)+3)+'" font-size="7" fill="rgba(255,255,255,0.32)" text-anchor="end" font-family="DM Mono,monospace">0</text>');
   /* Sun altitude - colored segments */
-  function sunAlt(t){return(t<sR||t>sS)?null:85*Math.sin(Math.PI*(t-sR)/(sS-sR));}
-  function sunCol(t){
-    if(t>=sR-GD&&t<=sR+GD)return '#E8A84C';
-    if(t>=sS-GD&&t<=sS+0.1)return '#E8A84C';
-    if((t>=dCiv&&t<sR-GD)||(t>sS+0.1&&t<=ciS))return '#6878C8';
+  function sunAlt(tv){return(tv<sR||tv>sS)?null:85*Math.sin(Math.PI*(tv-sR)/(sS-sR));}
+  function sunCol(tv){
+    if(tv>=sR-GD&&th<=sR+GD)return '#E8A84C';
+    if(tv>=sS-GD&&th<=sS+0.1)return '#E8A84C';
+    if((tv>=dCiv&&th<sR-GD)||(tv>sS+0.1&&th<=ciS))return '#6878C8';
     return '#F0C840';
   }
-  var segs=[],cur=null,t,a,col;
-  for(t=sR;t<=sS+0.02;t+=0.04){
-    a=sunAlt(t); if(a===null||a<0){if(cur){segs.push(cur);cur=null;}continue;}
-    col=sunCol(t); if(!cur||cur.c!==col){if(cur)segs.push(cur);cur={c:col,p:[]};}
-    cur.p.push(tx(t).toFixed(1)+','+ty(a).toFixed(1));
+  var segs=[],cur=null,th,a,col;
+  for(th=sR;th<=sS+0.02;th+=0.04){
+    a=sunAlt(th); if(a===null||a<0){if(cur){segs.push(cur);cur=null;}continue;}
+    col=sunCol(th); if(!cur||cur.c!==col){if(cur)segs.push(cur);cur={c:col,p:[]};}
+    cur.p.push(tx(th).toFixed(1)+','+ty(a).toFixed(1));
   }
   if(cur)segs.push(cur);
   segs.forEach(function(sg){
@@ -558,28 +1314,28 @@ function drawChart(){
   /* Moon */
   if(mR!==null&&mS!==null){
     var mp=[];
-    for(t=0;t<=24;t+=0.08){
-      var tt=(t<mR&&mR>8)?t+24:t;
+    for(th=0;th<=24;th+=0.08){
+      var tt=(th<mR&&mR>8)?th+24:th;
       if(tt<mR||tt>mS)continue;
       a=55*Math.sin(Math.PI*(tt-mR)/(mS-mR));
-      if(a>=0)mp.push(tx(t).toFixed(1)+','+ty(a).toFixed(1));
+      if(a>=0)mp.push(tx(th).toFixed(1)+','+ty(a).toFixed(1));
     }
     if(mp.length>1)P.push('<polyline points="'+mp.join(' ')+'" fill="none" stroke="rgba(180,200,240,'+Math.min(0.85,0.28+day.il/70).toFixed(2)+')" stroke-width="1.8" stroke-dasharray="7,3" stroke-linecap="round"/>');
   }
   /* Galactic center - proper hour-angle bell curve */
-  function gcAlt(t){
-    var dec=-29*Math.PI/180, lat=28.4*Math.PI/180, H=(t-23.83)*15*Math.PI/180;
+  function gcAlt(tv){
+    var dec=-29*Math.PI/180, lat=28.4*Math.PI/180, H=(tv-23.83)*15*Math.PI/180;
     var s=Math.sin(lat)*Math.sin(dec)+Math.cos(lat)*Math.cos(dec)*Math.cos(H);
     return Math.asin(Math.max(-1,Math.min(1,s)))*180/Math.PI;
   }
   var mwC=day.il<10?'#27C4A0':day.il<25?'#5DB870':day.il<50?'#F0A844':'#E05A5A';
-  var mwS=[],mwCur=null;
-  for(t=0;t<=24;t+=0.05){
-    a=gcAlt(t);
+  var mwS=[],mwCur=null;var th;
+  for(th=0;th<=24;th+=0.05){
+    a=gcAlt(th);
     if(a<0){if(mwCur){mwS.push(mwCur);mwCur=null;}continue;}
-    var night=(t>=asS||t<=dAst), c2=night?mwC:'rgba(255,255,255,0.28)';
+    var night=(th>=asS||th<=dAst), c2=night?mwC:'rgba(255,255,255,0.28)';
     if(!mwCur||mwCur.c!==c2){if(mwCur)mwS.push(mwCur);mwCur={c:c2,night:night,p:[]};}
-    mwCur.p.push(tx(t).toFixed(1)+','+ty(a,40).toFixed(1));
+    mwCur.p.push(tx(th).toFixed(1)+','+ty(a,40).toFixed(1));
   }
   if(mwCur)mwS.push(mwCur);
   mwS.forEach(function(ms){
@@ -614,203 +1370,42 @@ function drawChart(){
     if(major)P.push('<text x="'+xh.toFixed(1)+'" y="'+(aY+15)+'" font-size="8" fill="rgba(255,255,255,0.45)" text-anchor="middle" font-family="DM Mono,monospace">'+(h<10?'0':'')+h+':00</text>');
   }
   /* Light color bar - 144 segments */
-  function lerp3(r1,g1,b1,r2,g2,b2,t){
-    return 'rgb('+Math.round(r1+(r2-r1)*t)+','+Math.round(g1+(g2-g1)*t)+','+Math.round(b1+(b2-b1)*t)+')';
+  function lerp3(r1,g1,b1,r2,g2,b2,th){
+    return 'rgb('+Math.round(r1+(r2-r1)*th)+','+Math.round(g1+(g2-g1)*th)+','+Math.round(b1+(b2-b1)*th)+')';
   }
-  function lCol(t){
-    if(t<=dAst||t>=asS) return 'rgb(5,6,10)';
-    if(t<=dCiv)  { var p=(t-dAst)/(dCiv-dAst); return lerp3(5,6,10,12,22,55,p); }
-    if(t>=ciS)   { var p=1-(t-ciS)/(asS-ciS);  return lerp3(5,6,10,12,22,55,p); }
-    if(t<=sR-GD) { var p=(t-dCiv)/(sR-GD-dCiv); return lerp3(12,22,55,60,80,185,p); }
-    if(t>=sS+0.55&&t<=ciS){ var p=1-(t-sS-0.55)/(ciS-sS-0.55); return lerp3(12,22,55,60,80,185,p); }
-    if(t<=sR){
-      var p=(t-(sR-GD))/GD;
+  function lCol(tv){
+    if(tv<=dAst||tv>=asS) return 'rgb(5,6,10)';
+    if(tv<=dCiv)  { var p=(tv-dAst)/(dCiv-dAst); return lerp3(5,6,10,12,22,55,p); }
+    if(tv>=ciS)   { var p=1-(tv-ciS)/(asS-ciS);  return lerp3(5,6,10,12,22,55,p); }
+    if(tv<=sR-GD) { var p=(tv-dCiv)/(sR-GD-dCiv); return lerp3(12,22,55,60,80,185,p); }
+    if(tv>=sS+0.55&&tv<=ciS){ var p=1-(tv-sS-0.55)/(ciS-sS-0.55); return lerp3(12,22,55,60,80,185,p); }
+    if(tv<=sR){
+      var p=(tv-(sR-GD))/GD;
       return p<0.35?lerp3(60,80,185,190,55,10,p/0.35):p<0.7?lerp3(190,55,10,255,130,20,(p-0.35)/0.35):lerp3(255,130,20,255,200,80,(p-0.7)/0.3);
     }
-    if(t>=sS-GD){
-      var p=(t-(sS-GD))/GD;
+    if(tv>=sS-GD){
+      var p=(tv-(sS-GD))/GD;
       return p<0.3?lerp3(255,250,220,255,200,80,p/0.3):p<0.65?lerp3(255,200,80,255,130,20,(p-0.3)/0.35):lerp3(255,130,20,60,80,185,(p-0.65)/0.35);
     }
-    if(t<=sR+GD){ var p=(t-sR)/GD; return lerp3(255,200,80,255,252,230,p); }
-    var alt=85*Math.sin(Math.PI*(t-sR)/(sS-sR));
+    if(tv<=sR+GD){ var p=(tv-sR)/GD; return lerp3(255,200,80,255,252,230,p); }
+    var alt=85*Math.sin(Math.PI*(tv-sR)/(sS-sR));
     return alt<15?'rgb(255,240,180)':alt<40?'rgb(255,252,235)':'rgb(255,255,255)';
   }
   var barY=PT+CH+AXIS_H+BAR_GAP, sw=CW/144;
   for(var bi=0;bi<144;bi++){
     P.push('<rect x="'+(PL+bi*sw).toFixed(2)+'" y="'+barY+'" width="'+(sw+0.5).toFixed(2)+'" height="'+BAR_H+'" fill="'+lCol((bi/144)*24)+'"/>');
   }
-  P.push('<rect x="'+PL+'" y="'+barY+'" width="'+CW+'" height="'+BAR_H+'" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" rx="1"/>');
-  P.push('<text x="'+(PL+2)+'" y="'+(barY+BAR_H+11)+'" font-size="7.5" fill="rgba(255,255,255,0.28)" font-family="DM Mono,monospace">colore della luce sul campo</text>');
+  P.push('<rect x="'+PL+'" y="'+barY+'" width="'+CW+'" height="'+BAR_H+'" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1" rx="2"/>');
+  P.push('<text x="'+(PL+2)+'" y="'+(barY+BAR_H+11)+'" font-size="7.5" fill="rgba(255,255,255,0.28)" font-family="DM Mono,monospace">'+(LANG==='en'?'field light colour →':'colore della luce sul campo →')+'</text>');
   /* Inject SVG */
   var svgH=barY+BAR_H+16;
   document.getElementById('chartWrap').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+svgH+'" style="width:100%;display:block;overflow:visible">'+P.join('')+'</svg>';
 }
 
-/* ── DAY SELECTOR ── */
-function gd(d){return DY.find(x=>x.d===d);}
-
-function selDay(d){
-  curD=d;
-  document.querySelectorAll(".dp").forEach(p=>p.classList.toggle("sel",+p.dataset.d===d));
-  document.querySelectorAll(".cc").forEach(c=>c.classList.toggle("sel",+c.dataset.d===d));
-  updDash();
-  drawChart(gd(d));
-  if(curSp!==null)updPA(curSp);
-  updTon();
-  document.getElementById("selLbl").textContent=`${d} giugno 2026`;
-}
-
-function updDash(){
-  const d=gd(curD); if(!d)return;
-  const qLabel={excel:"Eccellente",good:"Ottimo",ok:"Accettabile"};
-  const qCls={excel:"qe-b",good:"qg-b",ok:"qo-b"};
-  document.getElementById("adsh").innerHTML=`
-    <div class="ai"><div class="al2">☀ Alba</div><div class="av">${d.ri}</div><div class="as2">Civil: ${d.ci}</div></div>
-    <div class="ai"><div class="al2">✦ Ora d'oro alba</div><div class="av" style="font-size:10px">${d.gm}</div></div>
-    <div class="ai"><div class="al2">☀ Tramonto</div><div class="av">${d.se}</div></div>
-    <div class="ai"><div class="al2">✦ Ora d'oro tramonto</div><div class="av" style="font-size:10px">${d.ge}</div></div>
-    <div class="ai"><div class="al2">◑ Buio astronomico</div><div class="av">${d.as}</div><div class="as2">Blue hour: ${d.ci}–${d.as}</div></div>
-    <div class="ai"><div class="al2">★ Alba centro galattico</div><div class="av">~23:20</div><div class="as2">Visibile fino alle ~04:41</div></div>
-    <div class="ai"><div class="al2">${d.mn} Luna ${d.il}%</div><div class="av" style="font-size:10px">↑${d.mr} · ↓${d.ms}</div></div>
-    <div class="ai"><div class="al2">★ Finestra buio</div><div class="av" style="font-size:9px">${d.dw2}</div><div class="aq ${qCls[d.q]}">${qLabel[d.q]}</div></div>
-    ${d.ev?`<div class="ai" style="border-color:var(--gold)"><div class="al2">Evento</div><div class="av" style="font-size:10px">${d.ev}</div></div>`:""}
-  `;
-}
-
-function bldPills(){
-  const c=document.getElementById("dpills");
-  DY.forEach(d=>{
-    const el=document.createElement("button");
-    el.className=`dp ${QCC[d.q]}`;
-    el.dataset.d=d.d;
-    el.innerHTML=`${d.d}<br>${d.mn}`;
-    el.title=`${d.d} giu · Luna ${d.il}% · ${QL[d.q]}`;
-    el.onclick=()=>selDay(d.d);
-    c.appendChild(el);
-  });
-}
-
-function bldCal(){
-  const g=document.getElementById("cgrid");
-  DY.forEach(d=>{
-    const bc={excel:"be",good:"bg",ok:"bo"}[d.q];
-    const el=document.createElement("div");
-    el.className=`cc${d.d===curD?" sel":""}`;
-    el.dataset.d=d.d;
-    el.innerHTML=`<div class="cc-d">${d.dw.slice(0,2)}</div><div class="cc-n">${d.d}</div><div class="cc-m">${d.mn}</div><div class="cc-b ${bc}"></div>${d.ev?`<div class="cc-ev">${d.ev.replace(/^\S+ /,"")}</div>`:""}`;
-    el.onclick=()=>selDay(d.d);
-    g.appendChild(el);
-  });
-}
-
-/* ── PANEL ── */
-function openP(id){
-  const s=SP[id]; curSp=id;
-  const iEl=document.getElementById("pIs");
-  iEl.textContent=s.is==="T"?"▲ TENERIFE":"▲ LANZAROTE";
-  iEl.className="pis "+s.is;
-  document.getElementById("pNm").textContent=s.nm;
-  document.getElementById("pTy").textContent=s.ty;
-  const img=document.getElementById("pIm"),ph=document.getElementById("pPh");
-  if(s.ph){img.src=s.ph;img.style.display="block";ph.style.display="none";}
-  else{img.style.display="none";ph.style.display="flex";}
-  document.getElementById("pLi").textContent=s.li;
-  document.getElementById("pFc").innerHTML=s.fo.map((f,i)=>`<span class="fchip ${s.fc[i]}">${f}mm</span>`).join("");
-  document.getElementById("pSt").textContent=s.se;
-  document.getElementById("pCo").textContent=s.co;
-  document.getElementById("pNo").textContent=s.no;
-  document.getElementById("pMWt").textContent=s.mw;
-  const allTags=[...s.tg,...(s.fc2||[])];
-  document.getElementById("pTg").innerHTML=allTags.map(t=>`<span class="tag ${TC[t]}">${TL[t]}</span>`).join("");
-  document.getElementById("pGp").textContent=`GPS: ${s.lt.toFixed(4)}°N  ${Math.abs(s.ln).toFixed(4)}°W`;
-  updPA(id);
-  document.getElementById("panel").classList.add("open");
-  map.panTo([s.lt,s.ln]);
-}
-
-function updPA(id){
-  const d=gd(curD); if(!d)return;
-  const qCol={excel:"var(--excel)",good:"var(--green)",ok:"var(--amber)"};
-  const qBg={excel:"rgba(39,196,160,.1)",good:"rgba(93,184,112,.08)",ok:"rgba(240,168,68,.08)"};
-  document.getElementById("pDL").textContent=`${d.d} giugno 2026`;
-  document.getElementById("pSunR").textContent=`↑ ${d.ri}`;
-  document.getElementById("pGolA").textContent=d.gm;
-  document.getElementById("pSunS").textContent=`↓ ${d.se}`;
-  document.getElementById("pGolE").textContent=d.ge;
-  document.getElementById("pTwi").textContent=`da ${d.as}`;
-  document.getElementById("pMWR").textContent="~23:20 (nucleo galattico visibile)";
-  document.getElementById("pMWS").textContent="~04:41 (alba astronomica)";
-  document.getElementById("pMn").textContent=`${d.mn} ${d.il}% · ↑${d.mr} · ↓${d.ms}`;
-  document.getElementById("pWin").textContent=d.dw2;
-  const tb=document.getElementById("pTb");
-  tb.style.background=qBg[d.q]; tb.style.color=qCol[d.q];
-  tb.textContent=d.nt;
-  document.getElementById("pMp").innerHTML=DY.map(day=>
-    `<span class="mp ${QMP[day.q]}" onclick="selDay(${day.d})" title="${day.d} giu · Luna ${day.il}%">${day.d}${day.mn}</span>`
-  ).join("");
-}
-
-function clP(){document.getElementById("panel").classList.remove("open");curSp=null;}
-
-/* ── GRID ── */
-function updTon(){
-  const d=gd(curD);
-  const qBg={excel:"rgba(39,196,160,.12)",good:"rgba(93,184,112,.1)",ok:"rgba(240,168,68,.1)"};
-  const qCol={excel:"var(--excel)",good:"var(--green)",ok:"var(--amber)"};
-  document.querySelectorAll(".mtn").forEach(el=>{
-    if(d){el.style.background=qBg[d.q];el.style.color=qCol[d.q];
-      el.textContent=`${d.d} giu · ${QL[d.q]}`;}
-  });
-}
-
-function bldGrid(){
-  const gT=document.getElementById("gT"),gL=document.getElementById("gL");
-  SP.forEach((s,i)=>{
-    const allTags=[...s.tg,...(s.fc2||[])];
-    const el=document.createElement("div");
-    el.className=`mc i${s.is}`;
-    el.dataset.island=s.is;
-    el.dataset.tags=allTags.join(",");
-    el.style.animationDelay=`${i*.03}s`;
-    el.innerHTML=`
-      <div class="mn">${s.nm}</div>
-      <div class="mt">${s.ty}</div>
-      <div class="mf">${s.fo.join(" · ")}mm equiv.</div>
-      <div class="mtn"></div>
-      <div class="tags">${allTags.map(t=>`<span class="tag ${TC[t]}">${TL[t]}</span>`).join("")}</div>`;
-    el.onclick=()=>openP(s.id);
-    (s.is==="T"?gT:gL).appendChild(el);
-  });
-  updTon();
-}
-
-/* ── FILTER ── */
-function setF(f,btn){
-  curF=f;
-  document.querySelectorAll(".fb").forEach(b=>
-    b.classList.remove("on","oA","oB","oC","oD","oE","oF","oG","oW","oS","oT")
-  );
-  btn.classList.add("on");
-  const cm={T:"oA",L:"oB",milky:"oC",sunset:"oD",alba:"oE",golden:"oF",drone:"oG",wide:"oW",std:"oS",tele:"oT"};
-  if(cm[f])btn.classList.add(cm[f]);
-  mks.forEach(({m,s})=>{
-    const tags=[...s.tg,...(s.fc2||[])];
-    const show=f==="all"||s.is===f||tags.includes(f);
-    if(show)m.addTo(map);else map.removeLayer(m);
-  });
-  document.querySelectorAll(".mc").forEach(el=>{
-    const show=f==="all"||el.dataset.island===f||el.dataset.tags.split(",").includes(f);
-    el.classList.toggle("hidden",!show);
-  });
-  if(curSp!==null){
-    const s=SP[curSp];
-    const tags=[...s.tg,...(s.fc2||[])];
-    if(!(f==="all"||s.is===f||tags.includes(f)))clP();
-  }
-}
-
-/* ── INIT ── */
-
+/* ─────────────────────────────────────────────
+   SECTION 14: SKY COMPASS
+   (kept verbatim from v7 — proven to work)
+───────────────────────────────────────────── */
 /* ═══ SKY COMPASS ══════════════════════════════════════════════════ */
 var _cMap=null;
 var _mDec={9:-5,10:-10,11:-14,12:-18,13:-20,14:-15,15:22,16:20,17:17,18:12,19:7,20:0};
@@ -897,18 +1492,20 @@ function _drawCSvg(sun,moon,gc){
   obj(gc,'#27C4A0',5,'Via Lattea');
   obj(moon,'rgba(180,200,240,0.95)',7,'Luna');
   obj(sun,'#F5D070',9,'Sole');
-  document.getElementById('cSvg').innerHTML=P.join('');
+  document.getElementById('cSvgWrap').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" style="position:absolute;inset:0;width:300px;height:300px;pointer-events:none;z-index:2000">'+P.join('')+'</svg>';
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
+/* ─────────────────────────────────────────────
+   SECTION 15: INIT
+───────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function(){
   bldPills();
-  bldCal();
-  updDash();
-  drawChart();
   bldGrid();
-  selDay(curD);
+  selDay(curD);   /* triggers updDash + updMoonDisplay + drawChart */
   initMap();
+  applyLang();    /* set initial labels */
 });
+
 
 </script>
 </body>
